@@ -7,7 +7,7 @@ Allows one to generate Chinese practice worksheets.
 * Simplified and traditional Chinese
 * Stroke order
 * Radicals
-* Customizable suggested pinyin and translation
+* Customizable pinyin and translation
 * Customizable title and grid style
 
 ## Dependencies
@@ -25,7 +25,7 @@ gen.py
 ```
 gen.py --dataset=$DATASET_PATH --characters='你好' --title='Vocabulary' --guide='star'
 ```
-### Customize suggested pinyin and translation
+### Customize pinyin and translation
 ```
 gen.py --dataset=$DATASET_PATH --characters='你好' --info # Generate character_infos.json
 
