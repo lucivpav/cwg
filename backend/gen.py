@@ -93,6 +93,7 @@ def object_decoder(obj):
 class Guide(Enum):
     NONE = 1
     STAR = 2
+    CROSS = 3
 
 def get_character_json(file, character):
     while 1:
@@ -208,6 +209,32 @@ def draw_header(canvas, title, font_size, y):
     canvas.drawString(NAME_OFFSET, y, 'Name:');
     canvas.drawString(NAME_OFFSET + SCORE_OFFSET, y, 'Score:');
 
+def draw_guide(canvas, x, y, guide):
+    canvas.setDash(1, 2);
+    canvas.setStrokeColor(CMYKColor(0, 0, 0, 0.2));
+
+    if guide == Guide.STAR:
+        x1 = x;
+        y1 = y;
+        x2 = x1 + SQUARE_SIZE;
+        y2 = y - SQUARE_SIZE;
+        canvas.line(x1, y1, x2, y2);
+        canvas.line(x2, y1, x1, y2);
+    elif guide == Guide.CROSS:
+        x1 = x;
+        y1 = y - SQUARE_SIZE/2;
+        x2 = x1 + SQUARE_SIZE;
+        y2 = y1;
+        canvas.line(x1, y1, x2, y2);
+        x1 = x + SQUARE_SIZE/2;
+        y1 = y;
+        x2 = x1;
+        y2 = y1 - SQUARE_SIZE;
+        canvas.line(x1, y1, x2, y2);
+        
+    canvas.setDash();
+    canvas.setStrokeColor(CMYKColor(0, 0, 0, 1));
+
 def draw_character_row(canvas, character_info, y, guide):
     character_y = y - SQUARE_SIZE;
     radical_y = character_y - RADICAL_HEIGHT;
@@ -222,18 +249,7 @@ def draw_character_row(canvas, character_info, y, guide):
     for i in range(0, int(CHARACTER_ROW_WIDTH/SQUARE_SIZE)):
         canvas.rect(GRID_OFFSET + i*SQUARE_SIZE, \
                 radical_pinyin_y - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
-        # draw guide
-        if guide == Guide.STAR:
-            canvas.setDash(1, 2);
-            canvas.setStrokeColor(CMYKColor(0, 0, 0, 0.2));
-            guide_x1 = GRID_OFFSET + i*SQUARE_SIZE;
-            guide_y1 = radical_pinyin_y;
-            guide_x2 = guide_x1 + SQUARE_SIZE;
-            guide_y2 = radical_pinyin_y - SQUARE_SIZE;
-            canvas.line(guide_x1, guide_y1, guide_x2, guide_y2);
-            canvas.line(guide_x2, guide_y1, guide_x1, guide_y2);
-            canvas.setDash();
-            canvas.setStrokeColor(CMYKColor(0, 0, 0, 1));
+        draw_guide(canvas, GRID_OFFSET + i*SQUARE_SIZE, radical_pinyin_y, guide);
 
     # draw character
     canvas.drawImage(character_info.character + '.png', \
@@ -366,6 +382,8 @@ def get_guide(guide_str):
         return Guide.NONE;
     elif guide_str == Guide.STAR.name.lower():
         return Guide.STAR;
+    elif guide_str == Guide.CROSS.name.lower():
+        return Guide.CROSS;
     else:
         raise GenException('Invalid guide ' + guide_str);
 
