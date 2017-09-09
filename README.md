@@ -33,3 +33,6 @@ gen.py --dataset=$DATASET_PATH --characters='你好' --info # Generate character
 
 gen.py --dataset=$DATASET_PATH --title='Vocabulary' --guide='star' # Generate worksheet
 ```
+
+### License
+This project is released under the GPLv3 license, for more details, take a look at the LICENSE.txt file in the source code.
