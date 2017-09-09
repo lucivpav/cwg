@@ -1,0 +1,39 @@
+label {
+  font-size: 20px;
+}
+
+table .narrow
+{
+  width: 10%;
+}
+
+table .wide
+{
+  width: 100%
+}
+
+table th
+{
+  font-size: 20px;
+}
+
+table
+{
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.glyphicon.spinning {
+    animation: spin 1s infinite linear;
+    -webkit-animation: spin2 1s infinite linear;
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg); }
+    to { transform: scale(1) rotate(360deg); }
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}

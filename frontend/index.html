@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Chinese Worksheet Generator</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="script.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="jumbotron text-center">
+  <h1>Chinese Worksheet Generator</h1>
+  <p>Generate Chinese Practice Sheets For Free ( ͡° ͜ʖ ͡°)</p> 
+</div>
+
+
+<div class="container">
+
+<div class="form-group">
+  <label for="characters">Characters:</label>
+  <input maxlength="50" type="text" class="form-control input-lg" id="characters" value="我覺得你很行">
+</div>
+<div class="form-group">
+  <label for="title">Title:</label>
+  <input maxlength="20" type="text" class="form-control input-lg" id="title" value="Vocabulary">
+</div>
+<div class="form-group">
+  <label for="guide">Guide:</label>
+  <select id="guide" class="form-control input-lg">
+    <option value="0">None</option>
+    <option value="1" selected>Star</option>
+  </select>
+</div>
+<button id="submit" type="submit" class="btn-lg btn-primary"
+  onclick="generateInfos()">Generate</button>
+</button>
+<label id="infos_loading" style="display:none">
+    <span class="glyphicon glyphicon-refresh spinning"></span> Loading...
+</label>
+
+<div id="infos_error" class="alert alert-danger" style="display:none">
+</div>
+
+
+<div id="characters_table"/>
+</div>
+
+<button id="confirm" type="submit" class="btn-lg btn-primary" style="display:none"
+	onclick="generateSheet()">Confirm</button>
+<label id="sheet_loading" style="display:none">
+    <span class="glyphicon glyphicon-refresh spinning"></span> Loading...
+</label>
+
+<div id="sheet_error" class="alert alert-danger" style="display:none">
+</div>
+
+<button id="download" type="submit" class="btn-lg btn-primary" style="display:none"
+	onclick="retrieveSheet()">Download (*•̀ᴗ•́*)و ̑̑</button>
+  
+<div id="retrieve_error" class="alert alert-danger" style="display:none">
+</div>
+
+<br>
+<br>
+
+</body>
+</html>
