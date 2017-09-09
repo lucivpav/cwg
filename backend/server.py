@@ -8,7 +8,7 @@ import os
 import tempfile
 import shutil
 from gen import generate_infos, generate_sheet, GenException, \
-                INFOS_FILE, SHEET_FILE
+                INFOS_FILE, SHEET_FILE, get_guide
 
 DATASET_NAME = 'makemeahanzi';
 
@@ -49,7 +49,7 @@ class GenerateInfos(Resource):
 class GenerateSheet(Resource):
     def get(self):
         temp_path = request.args.get('id');
-        guide = request.args.get('guide');
+        guide = get_guide(request.args.get('guide'));
         title = request.args.get('title');
         pinyins = [];
         definitions = [];
