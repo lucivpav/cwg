@@ -11,6 +11,8 @@ from gen import generate_infos, generate_sheet, GenException, \
                 INFOS_FILE, SHEET_FILE, get_guide
 
 DATASET_NAME = 'makemeahanzi';
+LOG_FILE = 'errors.log';
+INTERNAL_ERROR_MSG = 'Failed to generate sheet. Please enter different configuration or try again later.';
 
 class GenerateInfos(Resource):
     def get(self):
@@ -24,7 +26,11 @@ class GenerateInfos(Resource):
             try:
                 generate_infos(dataset_path, characters);
             except GenException as e:
+                log_error('generate_infos ' + characters);
                 return jsonpify({'error': str(e)});
+            except:
+                log_error('generate_infos ' + characters);
+                return jsonpify({'error': INTERNAL_ERROR_MSG});
 
             with open(INFOS_FILE) as f:
                 infos = [];
@@ -63,12 +69,16 @@ class GenerateSheet(Resource):
         update_infos_file(file_path, pinyins, definitions);
         dataset_path = get_dataset_path();
         os.chdir(temp_path);
+        error_msg = 'generate_sheet ' + title + ' ' + str(guide);
         try:
             generate_sheet(dataset_path, title, guide);
         except GenException as e:
+            log_error(error_msg);
             shutil.rmtree(temp_path);
-            
             return jsonpify({'error': str(e)});
+        except:
+            log_error(error_msg);
+            return jsonpify({'error': INTERNAL_ERROR_MSG});
         return jsonpify({});
 
 class RetrieveSheet(Resource):
@@ -100,9 +110,13 @@ def update_infos_file(file_path, pinyins, definitions):
                 i += 1;
     shutil.copy(new_file_path, file_path);
 
-# TODO: we need a program to clean /tmp time to time
+def log_error(parameters):
+    with open(os.path.join(WORKING_DIR, LOG_FILE), 'w') as f:
+        f.write(parameters + os.linesep);
+
 if __name__ == '__main__':
     SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__));
+    WORKING_DIR = os.getcwd();
     app = Flask(__name__);
     cors = CORS(app);
     app.config['CORS_HEADERS'] = 'Content-Type';
