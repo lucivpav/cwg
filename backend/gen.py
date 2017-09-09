@@ -382,11 +382,13 @@ def generate_sheet(dataset_path, title, guide):
         create_radical_svg(dataset_path, info);
         create_stroke_order_svgs(info);
         convert_svgs_to_pngs();
-        y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2-i_mod*CHARACTER_ROW_HEIGHT
+        y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2-i_mod*CHARACTER_ROW_HEIGHT;
         draw_character_row(c, info, y, guide);
         delete_files('*.svg');
         delete_files('*.png');
     
+    y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2 - \
+        (CHARACTERS_PER_PAGE-1)*CHARACTER_ROW_HEIGHT;
     draw_footer(c, FOOTER_FONT_SIZE, y-CHARACTER_ROW_HEIGHT - \
                     GRID_OFFSET/2);
     draw_page_number(c, i / CHARACTERS_PER_PAGE + 1, PAGE_NUMBER_FONT_SIZE);
