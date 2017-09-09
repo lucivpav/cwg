@@ -319,9 +319,13 @@ def draw_footer(canvas, font_size, y):
     text1 = 'Created with ' + PROGRAM_FULLNAME;
     text2 = PROGRAM_WEBSITE;
     text2_w = stringWidth(text2, FONT_NAME, FOOTER_FONT_SIZE);
+    text2_x = PAGE_SIZE[0]-GRID_OFFSET-text2_w;
     canvas.setFont(FONT_NAME, font_size);
     canvas.drawString(GRID_OFFSET, y, text1);
-    canvas.drawString(PAGE_SIZE[0]-GRID_OFFSET-text2_w, y, text2);
+    canvas.drawString(text2_x, y, text2);
+    y -= 0.2*FONT_SIZE;
+    canvas.linkURL('www.' + text2, (text2_x, y, \
+                    text2_x + text2_w, y + 0.8*FONT_SIZE));
 
 def draw_page_number(canvas, page_number, font_size):
     canvas.setFont(FONT_NAME, font_size);
