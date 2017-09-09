@@ -31,7 +31,7 @@ gen.py --dataset=$DATASET_PATH --characters='你好' --info # Generate character
 
 # You may edit the 'character_infos.json' to customize pinyin and translation
 
-gen.py --dataset=$DATASET_PATH --title='Vocabulary' --guide='star' # Generate worksheet
+gen.py --dataset=$DATASET_PATH --title='Vocabulary' --guide='star' --sheet # Generate worksheet
 ```
 
 ## License
