@@ -7,8 +7,8 @@ Allows one to generate Chinese practice worksheets.
 * Simplified and traditional Chinese
 * Stroke order
 * Radicals
-* Customize suggested pinyin and translation
-* Customize title and grid style
+* Customizable suggested pinyin and translation
+* Customizable title and grid style
 
 ## Dependencies
 * makemeahanzi dataset
