@@ -1,5 +1,5 @@
 var id;
-const BASE_URL = "http://chineseworksheetgenerator"
+const BASE_URL = "http://chineseworksheetgenerator.org"
 const URL = BASE_URL + ":5002";
 const GENERATOR_UNAVAILABLE_MSG = "Generator is unavailable. Please try again later.";
 const SERVER_FUCKED_UP_MSG = "Failed to generate sheet. Please enter different configuration or try again later.";
