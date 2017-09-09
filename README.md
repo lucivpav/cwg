@@ -1,7 +1,7 @@
 # Chinese Worksheet Generator
 Allows one to generate Chinese practice worksheets.
 
-![](https://i.imgur.com/7UDpAIj.png)
+![](http://i.imgur.com/idXo0Pj.png)
 
 ## Features
 * Simplified and traditional Chinese
