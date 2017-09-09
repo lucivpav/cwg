@@ -387,7 +387,8 @@ def generate_sheet(dataset_path, title, guide):
         delete_files('*.svg');
         delete_files('*.png');
     
-    draw_footer(c, FOOTER_FONT_SIZE, 1.5*GRID_OFFSET);
+    draw_footer(c, FOOTER_FONT_SIZE, y-CHARACTER_ROW_HEIGHT - \
+                    GRID_OFFSET/2);
     draw_page_number(c, i / CHARACTERS_PER_PAGE + 1, PAGE_NUMBER_FONT_SIZE);
     c.showPage();
     c.save();
