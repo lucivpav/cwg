@@ -139,23 +139,23 @@ def retrieve_info(dataset_path, character):
         raise GenException('Invalid dataset data for character ' + character);
 
 def create_character_svg(character_info):
-    create_stroke_svg(character_info.character, character_info, len(character_info.stroke_order)-1);
+    create_stroke_svg(character_info.character, character_info, len(character_info.stroke_order));
 
 def create_radical_svg(dataset_path, character_info):
     radical = character_info.radical;
     radical_info = retrieve_info(dataset_path, radical);
     if radical_info == -1:
         raise GenException('Could not find data for radical ' + radical);
-    create_stroke_svg(radical, radical_info, len(radical_info.stroke_order)-1);
+    create_stroke_svg(radical, radical_info, len(radical_info.stroke_order));
 
 def create_stroke_svg(filename, character_info, stroke_number):
     character = character_info.character;
     stroke_order = character_info.stroke_order;
     output = '<svg viewBox="0 0 128 128">' \
             '<g transform="scale(0.125, -0.125) translate(0, -900)">'
-    for j in range(stroke_number+1, len(stroke_order)):
+    for j in range(stroke_number, len(stroke_order)):
         output += '\n<path fill=\"gray\" d=\"' + stroke_order[j] + '\"></path>';
-    for j in range(0, stroke_number+1):
+    for j in range(0, stroke_number):
         output += '\n<path d=\"' + stroke_order[j] + '\"></path>';
     output += '</g>\n</svg>';
     with open(filename + '.svg', 'w') as svg:
@@ -164,7 +164,7 @@ def create_stroke_svg(filename, character_info, stroke_number):
 def create_stroke_order_svgs(character_info):
     character = character_info.character;
     stroke_order = character_info.stroke_order;
-    for i in range(0, len(stroke_order)):
+    for i in range(0, len(stroke_order)+1):
         create_stroke_svg(character + str(i), character_info, i);
 
 def convert_svg_to_png(svg_path, png_path):
@@ -235,6 +235,14 @@ def draw_guide(canvas, x, y, guide):
     canvas.setDash();
     canvas.setStrokeColor(CMYKColor(0, 0, 0, 1));
 
+def prefill_character(canvas, x, y, filename):
+    size = SQUARE_SIZE - 2*SQUARE_PADDING
+    canvas.drawImage(filename, \
+            x, \
+            y - size, \
+            size, \
+            size, mask='auto');
+
 def draw_character_row(canvas, character_info, y, guide):
     character_y = y - SQUARE_SIZE;
     radical_y = character_y - RADICAL_HEIGHT;
@@ -250,6 +258,10 @@ def draw_character_row(canvas, character_info, y, guide):
         canvas.rect(GRID_OFFSET + i*SQUARE_SIZE, \
                 radical_pinyin_y - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
         draw_guide(canvas, GRID_OFFSET + i*SQUARE_SIZE, radical_pinyin_y, guide);
+
+    prefill_character(canvas, GRID_OFFSET + SQUARE_PADDING, \
+                        radical_pinyin_y - SQUARE_PADDING, \
+                        character_info.character + '0.png');
 
     # draw character
     canvas.drawImage(character_info.character + '.png', \
@@ -294,7 +306,7 @@ def draw_character_row(canvas, character_info, y, guide):
     character = character_info.character;
     stroke_y = y - TEXT_PADDING - pinyin_h - TEXT_PADDING - STROKE_SIZE;
     stroke_x = pinyin_x;
-    stroke_order = sorted(glob.glob(character + '*.png'))[1:];
+    stroke_order = sorted(glob.glob(character + '*.png'))[2:];
     stroke_order = [x[1:-4] for x in stroke_order];
     stroke_order = sorted([int(x) for x in stroke_order]); # sort numerically
     stroke_order = shorten_stroke_order(stroke_order, MAX_STROKES);
