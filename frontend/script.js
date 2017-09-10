@@ -7,6 +7,12 @@ function generateInfos()
 {
   document.getElementById("infos_loading").style.display = "inline";
   document.getElementById("infos_error").style.display = "none";
+  document.getElementById("sheet_loading").style.display = "none";
+  document.getElementById("sheet_error").style.display = "none";
+  document.getElementById("retrieve_error").style.display = "none";
+  document.getElementById("characters_table").style.display = "none";
+  document.getElementById("confirm").style.display = "none";
+  document.getElementById("download").style.display = "none";
   var characters = document.getElementById("characters").value;
   var title = document.getElementById("title").value;
   var guide = document.getElementById("guide").value;
@@ -56,10 +62,12 @@ function createCharactersTable(infos)
   }
   table += '</tbody></table></div>';
   document.getElementById("characters_table").innerHTML = table;
+  document.getElementById("characters_table").style.display = "inline";
 }
 
 function generateSheet()
 {
+  document.getElementById("download").style.display = "none";
   var title = document.getElementById("title").value;
   var guide = document.getElementById("guide").value;
   if ( guide == 0 )
