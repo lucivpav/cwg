@@ -95,10 +95,8 @@ class GenerateSheet(Resource):
         try:
             with open(COUNT_FILE, 'r') as f:
                 count = int(f.read().strip());
-                print('count read: ', count);
             with open(COUNT_FILE, 'w') as f:
                 f.write(str(count+1));
-                print('count written)');
         except:
             pass;
 
@@ -116,7 +114,6 @@ class RetrieveCount(Resource):
         try:
             with open(COUNT_FILE, 'r') as f:
                 count = f.read().strip();
-                print('count retrieved');
                 return jsonpify({'count': count});
         except:
                 return jsonpify({'count': 'N/A'});
