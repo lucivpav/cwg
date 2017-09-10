@@ -12,6 +12,7 @@ from gen import generate_infos, generate_sheet, GenException, \
 
 DATASET_NAME = 'makemeahanzi';
 LOG_FILE = 'errors.log';
+COUNT_FILE = 'count.txt'
 INTERNAL_ERROR_MSG = 'Failed to generate sheet. Please enter different configuration or try again later.';
 
 class GenerateInfos(Resource):
@@ -88,6 +89,19 @@ class GenerateSheet(Resource):
         except:
             log_error(error_msg);
             return jsonpify({'error': INTERNAL_ERROR_MSG});
+
+        # increment count
+        os.chdir(WORKING_DIR);
+        try:
+            with open(COUNT_FILE, 'r') as f:
+                count = int(f.read().strip());
+                print('count read: ', count);
+            with open(COUNT_FILE, 'w') as f:
+                f.write(str(count+1));
+                print('count written)');
+        except:
+            pass;
+
         return jsonpify({});
 
 class RetrieveSheet(Resource):
@@ -96,6 +110,16 @@ class RetrieveSheet(Resource):
         pdf = send_file(os.path.join(temp_path, SHEET_FILE), \
                         mimetype='application/pdf');
         return pdf;
+
+class RetrieveCount(Resource):
+    def get(self):
+        try:
+            with open(COUNT_FILE, 'r') as f:
+                count = f.read().strip();
+                print('count retrieved');
+                return jsonpify({'count': count});
+        except:
+                return jsonpify({'count': 'N/A'});
 
 def get_dataset_path():
     dataset_path = os.path.dirname(SCRIPT_PATH); # go up
@@ -133,4 +157,5 @@ if __name__ == '__main__':
     api.add_resource(GenerateInfos, '/generate_infos');
     api.add_resource(GenerateSheet, '/generate_sheet');
     api.add_resource(RetrieveSheet, '/retrieve_sheet');
+    api.add_resource(RetrieveCount, '/retrieve_count');
     app.run(port='5002');

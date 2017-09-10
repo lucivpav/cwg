@@ -3,6 +3,24 @@ const URL = "http://127.0.0.1:5002";
 const GENERATOR_UNAVAILABLE_MSG = "Generator is unavailable. Please try again later.";
 const SERVER_FUCKED_UP_MSG = "Failed to generate sheet. Please enter different configuration or try again later.";
 
+function onLoad()
+{
+  var url = URL + "/retrieve_count";
+  var req = new XMLHttpRequest();
+  req.open("GET", url, true);
+  req.onload = function (e) {
+    if ( req.readyState === 4 ) {
+      if ( req.status === 200 ) {
+        response = JSON.parse(req.responseText);
+        count = response["count"];
+        text = "Number of worksheets generated: " + count;
+        document.getElementById("worksheets_generated").innerHTML = text;
+      }
+    }
+  }
+  req.send(null);
+}
+
 function generateInfos()
 {
   document.getElementById("infos_loading").style.display = "inline";
