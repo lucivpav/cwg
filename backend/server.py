@@ -18,7 +18,7 @@ class GenerateInfos(Resource):
     def get(self):
         os.chdir(SCRIPT_PATH);
         characters = request.args.get('characters');
-        if characters == None:
+        if characters == None or len(characters) == 0:
             return jsonpify({'error': 'No characters provided'});
         with tempfile.TemporaryDirectory() as path:
             dataset_path = get_dataset_path();
@@ -55,8 +55,17 @@ class GenerateInfos(Resource):
 class GenerateSheet(Resource):
     def get(self):
         temp_path = request.args.get('id');
-        guide = get_guide(request.args.get('guide'));
+        guide = request.args.get('guide');
         title = request.args.get('title');
+        if temp_path == None or len(temp_path) == 0 or \
+            guide == None or len(guide) == 0 or \
+            title == None:
+            return jsonpify({'error': 'Invalid parameters'});
+        try:
+            guide = get_guide(guide);
+        except GenException as e:
+            return jsonpify({'error': str(e)});
+
         pinyins = [];
         definitions = [];
         i = 0;
