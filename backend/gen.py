@@ -394,7 +394,6 @@ def generate_sheet(dataset_path, title, guide):
     draw_page_number(c, i / CHARACTERS_PER_PAGE + 1, PAGE_NUMBER_FONT_SIZE);
     c.showPage();
     c.save();
-    delete_files(INFOS_FILE);
 
 def get_guide(guide_str):
     if guide_str == '' or guide_str == Guide.NONE.name.lower():
@@ -447,6 +446,7 @@ def main(argv):
         if info_mode == sheet_mode:
             generate_infos(dataset, characters);
             generate_sheet(dataset, title, guide_val);
+            delete_files(INFOS_FILE);
         elif info_mode:
             generate_infos(dataset, characters);
         else:
