@@ -17,7 +17,6 @@ INTERNAL_ERROR_MSG = 'Failed to generate sheet. Please enter different configura
 
 class GenerateInfos(Resource):
     def get(self):
-        os.chdir(SCRIPT_PATH);
         characters = request.args.get('characters');
         if characters == None or len(characters) == 0:
             return jsonpify({'error': 'No characters provided'});
@@ -111,6 +110,7 @@ class RetrieveSheet(Resource):
 
 class RetrieveCount(Resource):
     def get(self):
+        os.chdir(WORKING_DIR);
         try:
             with open(COUNT_FILE, 'r') as f:
                 count = f.read().strip();
