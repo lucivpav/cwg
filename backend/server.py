@@ -7,6 +7,7 @@ import json
 import os
 import tempfile
 import shutil
+from threading import Lock
 from gen import generate_infos, generate_sheet, GenException, \
                 INFOS_FILE, SHEET_FILE, get_guide
 
@@ -15,6 +16,8 @@ LOG_FILE = 'errors.log';
 COUNT_FILE = 'count.txt'
 INTERNAL_ERROR_MSG = 'Failed to generate sheet. Please enter different configuration or try again later.';
 
+count_lock = Lock();
+
 class GenerateInfos(Resource):
     def get(self):
         characters = request.args.get('characters');
@@ -22,9 +25,8 @@ class GenerateInfos(Resource):
             return jsonpify({'error': 'No characters provided'});
         with tempfile.TemporaryDirectory() as path:
             dataset_path = get_dataset_path();
-            os.chdir(path);
             try:
-                generate_infos(dataset_path, characters);
+                generate_infos(dataset_path, path, characters);
             except GenException as e:
                 log_error('generate_infos ' + characters);
                 return jsonpify({'error': str(e)});
@@ -32,7 +34,7 @@ class GenerateInfos(Resource):
                 log_error('generate_infos ' + characters);
                 return jsonpify({'error': INTERNAL_ERROR_MSG});
 
-            with open(INFOS_FILE) as f:
+            with open(os.path.join(path, INFOS_FILE)) as f:
                 infos = [];
                 while 1:
                     line = f.readline();
@@ -77,10 +79,9 @@ class GenerateSheet(Resource):
         file_path = os.path.join(temp_path, INFOS_FILE);
         update_infos_file(file_path, pinyins, definitions);
         dataset_path = get_dataset_path();
-        os.chdir(temp_path);
         error_msg = 'generate_sheet ' + title + ' ' + str(guide);
         try:
-            generate_sheet(dataset_path, title, guide);
+            generate_sheet(dataset_path, temp_path, title, guide);
         except GenException as e:
             log_error(error_msg);
             shutil.rmtree(temp_path);
@@ -90,7 +91,7 @@ class GenerateSheet(Resource):
             return jsonpify({'error': INTERNAL_ERROR_MSG});
 
         # increment count
-        os.chdir(WORKING_DIR);
+        count_lock.acquire();
         try:
             with open(COUNT_FILE, 'r') as f:
                 count = int(f.read().strip());
@@ -98,6 +99,8 @@ class GenerateSheet(Resource):
                 f.write(str(count+1));
         except:
             pass;
+        finally:
+            count_lock.release();
 
         return jsonpify({});
 
@@ -110,13 +113,15 @@ class RetrieveSheet(Resource):
 
 class RetrieveCount(Resource):
     def get(self):
-        os.chdir(WORKING_DIR);
+        count_lock.acquire();
         try:
             with open(COUNT_FILE, 'r') as f:
                 count = f.read().strip();
                 return jsonpify({'count': count});
         except:
-                return jsonpify({'count': 'N/A'});
+            return jsonpify({'count': 'N/A'});
+        finally:
+            count_lock.release();
 
 def get_dataset_path():
     dataset_path = os.path.dirname(SCRIPT_PATH); # go up
@@ -141,12 +146,11 @@ def update_infos_file(file_path, pinyins, definitions):
     shutil.copy(new_file_path, file_path);
 
 def log_error(parameters):
-    with open(os.path.join(WORKING_DIR, LOG_FILE), 'w') as f:
+    with open(LOG_FILE, 'w') as f:
         f.write(parameters + os.linesep);
 
 if __name__ == '__main__':
     SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__));
-    WORKING_DIR = os.getcwd();
     app = Flask(__name__);
     cors = CORS(app);
     app.config['CORS_HEADERS'] = 'Content-Type';
@@ -155,4 +159,4 @@ if __name__ == '__main__':
     api.add_resource(GenerateSheet, '/generate_sheet');
     api.add_resource(RetrieveSheet, '/retrieve_sheet');
     api.add_resource(RetrieveCount, '/retrieve_count');
-    app.run(port='5002');
+    app.run(port='5002', threaded=True);

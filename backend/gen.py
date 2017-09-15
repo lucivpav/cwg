@@ -138,17 +138,19 @@ def retrieve_info(dataset_path, character):
     except KeyError:
         raise GenException('Invalid dataset data for character ' + character);
 
-def create_character_svg(character_info):
-    create_stroke_svg(character_info.character, character_info, len(character_info.stroke_order));
+def create_character_svg(working_dir, character_info):
+    create_stroke_svg(working_dir, character_info.character, character_info,  \
+                        len(character_info.stroke_order));
 
-def create_radical_svg(dataset_path, character_info):
+def create_radical_svg(dataset_path, working_dir, character_info):
     radical = character_info.radical;
     radical_info = retrieve_info(dataset_path, radical);
     if radical_info == -1:
         raise GenException('Could not find data for radical ' + radical);
-    create_stroke_svg(radical, radical_info, len(radical_info.stroke_order));
+    create_stroke_svg(working_dir, radical, radical_info, \
+                        len(radical_info.stroke_order));
 
-def create_stroke_svg(filename, character_info, stroke_number):
+def create_stroke_svg(working_dir, filename, character_info, stroke_number):
     character = character_info.character;
     stroke_order = character_info.stroke_order;
     output = '<svg viewBox="0 0 128 128">' \
@@ -158,14 +160,14 @@ def create_stroke_svg(filename, character_info, stroke_number):
     for j in range(0, stroke_number):
         output += '\n<path d=\"' + stroke_order[j] + '\"></path>';
     output += '</g>\n</svg>';
-    with open(filename + '.svg', 'w') as svg:
+    with open(os.path.join(working_dir, filename + '.svg'), 'w') as svg:
         svg.write(output);
 
-def create_stroke_order_svgs(character_info):
+def create_stroke_order_svgs(working_dir, character_info):
     character = character_info.character;
     stroke_order = character_info.stroke_order;
     for i in range(0, len(stroke_order)+1):
-        create_stroke_svg(character + str(i), character_info, i);
+        create_stroke_svg(working_dir, character + str(i), character_info, i);
 
 def convert_svg_to_png(svg_path, png_path):
     quality = 100;
@@ -174,9 +176,9 @@ def convert_svg_to_png(svg_path, png_path):
     svg2png(bytestring=svg_data, write_to=png_path, \
             width=quality, height=quality);
 
-def convert_svgs_to_pngs():
-    for file in glob.glob('*.svg'):
-        file = os.getcwd() + '/' + file[:-4];
+def convert_svgs_to_pngs(working_dir):
+    for file in glob.glob(os.path.join(working_dir, '*.svg')):
+        file = os.path.join(working_dir, file[:-4]);
         convert_svg_to_png(file + '.svg', file + '.png');
 
 def delete_files(pattern):
@@ -235,15 +237,15 @@ def draw_guide(canvas, x, y, guide):
     canvas.setDash();
     canvas.setStrokeColor(CMYKColor(0, 0, 0, 1));
 
-def prefill_character(canvas, x, y, filename):
+def prefill_character(working_dir, canvas, x, y, filename):
     size = SQUARE_SIZE - 2*SQUARE_PADDING
-    canvas.drawImage(filename, \
+    canvas.drawImage(os.path.join(working_dir, filename), \
             x, \
             y - size, \
             size, \
             size, mask='auto');
 
-def draw_character_row(canvas, character_info, y, guide):
+def draw_character_row(working_dir, canvas, character_info, y, guide):
     character_y = y - SQUARE_SIZE;
     radical_y = character_y - RADICAL_HEIGHT;
     radical_pinyin_y = radical_y - RADICAL_PINYIN_HEIGHT
@@ -259,12 +261,13 @@ def draw_character_row(canvas, character_info, y, guide):
                 radical_pinyin_y - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
         draw_guide(canvas, GRID_OFFSET + i*SQUARE_SIZE, radical_pinyin_y, guide);
 
-    prefill_character(canvas, GRID_OFFSET + SQUARE_PADDING, \
+    prefill_character(working_dir, canvas, GRID_OFFSET + SQUARE_PADDING, \
                         radical_pinyin_y - SQUARE_PADDING, \
                         character_info.character + '0.png');
 
     # draw character
-    canvas.drawImage(character_info.character + '.png', \
+    character = os.path.join(working_dir, character_info.character + '.png');
+    canvas.drawImage(character, \
             GRID_OFFSET + SQUARE_PADDING, \
             character_y + SQUARE_PADDING, \
             SQUARE_SIZE - 2*SQUARE_PADDING, \
@@ -274,7 +277,8 @@ def draw_character_row(canvas, character_info, y, guide):
     radical_size = RADICAL_HEIGHT-2*RADICAL_PADDING;
     radical_x = GRID_OFFSET + (SQUARE_SIZE - radical_size)/2
     radical_y += RADICAL_PADDING;
-    canvas.drawImage(character_info.radical + '.png', \
+    radical = os.path.join(working_dir, character_info.radical + '.png');
+    canvas.drawImage(radical, \
             radical_x, radical_y, radical_size, radical_size, mask='auto');
 
     # draw radical pinyin
@@ -311,7 +315,8 @@ def draw_character_row(canvas, character_info, y, guide):
     stroke_order = sorted([int(x) for x in stroke_order]); # sort numerically
     stroke_order = shorten_stroke_order(stroke_order, MAX_STROKES);
     for stroke in stroke_order:
-        canvas.drawImage(character + str(stroke) + '.png', \
+        stroke = os.path.join(working_dir, character + str(stroke) + '.png');
+        canvas.drawImage(stroke, \
                 stroke_x, stroke_y, STROKE_SIZE, STROKE_SIZE, mask='auto');
         stroke_x += STROKE_SIZE + 2*STROKE_PADDING;
 
@@ -332,13 +337,13 @@ def draw_page_number(canvas, page_number, font_size):
     canvas.drawString(PAGE_SIZE[0]-PAGE_NUMBER_X_OFFSET, PAGE_NUMBER_Y_OFFSET, \
             str(int(page_number)));
 
-def generate_infos(dataset_path, characters):
+def generate_infos(dataset_path, working_dir, characters):
     if len(characters) > MAX_INPUT_CHARACTERS:
         raise GenException('Maximum number of characters exceeded (' + \
                 str(len(characters)) + \
                 '/' + str(MAX_INPUT_CHARACTERS) + ')');
 
-    with open(INFOS_FILE, 'w') as f:
+    with open(os.path.join(working_dir, INFOS_FILE), 'w') as f:
         for i in range(len(characters)):
             character = characters[i];
             info = retrieve_info(dataset_path, character);
@@ -349,25 +354,24 @@ def generate_infos(dataset_path, characters):
             j = info.toJSON();
             f.write(j + '\n');
 
-def generate_sheet(dataset_path, title, guide):
+def generate_sheet(dataset_path, working_dir, title, guide):
     if len(title) > MAX_TITLE_LENGTH:
         raise GenException('Title length exceeded (' + str(len(title)) + \
                 '/' + str(MAX_TITLE_LENGTH) + ')');
 
     infos = [];
 
-    with open(INFOS_FILE, 'r') as f:
+    with open(os.path.join(working_dir, INFOS_FILE), 'r') as f:
         while 1:
             line = f.readline();
             if line == '':
                 break;
             infos.append(json.loads(line, object_hook=object_decoder));
 
-    c = canvas.Canvas(SHEET_FILE, PAGE_SIZE);
+    c = canvas.Canvas(os.path.join(working_dir, SHEET_FILE), PAGE_SIZE);
     pdfmetrics.registerFont(TTFont(FONT_NAME, FONT_NAME + '.ttf'));
     draw_header(c, title, HEADER_FONT_SIZE, \
             PAGE_SIZE[1]-HEADER_PADDING);
-
     for i in range(len(infos)):
         i_mod = i % CHARACTERS_PER_PAGE;
         if i != 0 and i_mod == 0:
@@ -378,14 +382,14 @@ def generate_sheet(dataset_path, title, guide):
             draw_header(c, title, HEADER_FONT_SIZE, \
                     PAGE_SIZE[1]-HEADER_PADDING);
         info = infos[i];
-        create_character_svg(info);
-        create_radical_svg(dataset_path, info);
-        create_stroke_order_svgs(info);
-        convert_svgs_to_pngs();
+        create_character_svg(working_dir, info);
+        create_radical_svg(dataset_path, working_dir, info);
+        create_stroke_order_svgs(working_dir, info);
+        convert_svgs_to_pngs(working_dir);
         y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2-i_mod*CHARACTER_ROW_HEIGHT;
-        draw_character_row(c, info, y, guide);
-        delete_files('*.svg');
-        delete_files('*.png');
+        draw_character_row(working_dir, c, info, y, guide);
+        delete_files(os.path.join(working_dir, '*.svg'));
+        delete_files(os.path.join(working_dir, '*.png'));
     
     y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2 - \
         (CHARACTERS_PER_PAGE-1)*CHARACTER_ROW_HEIGHT;
@@ -441,16 +445,17 @@ def main(argv):
         usage();
         exit(1);
 
+    working_dir = os.getcwd();
     try:
         guide_val = get_guide(guide);
         if info_mode == sheet_mode:
-            generate_infos(dataset, characters);
-            generate_sheet(dataset, title, guide_val);
+            generate_infos(dataset, working_dir, characters);
+            generate_sheet(dataset, working_dir, title, guide_val);
             delete_files(INFOS_FILE);
         elif info_mode:
-            generate_infos(dataset, characters);
+            generate_infos(dataset, working_dir, characters);
         else:
-            generate_sheet(dataset, title, guide_val);
+            generate_sheet(dataset, working_dir, title, guide_val);
     except GenException as e:
         print(str(e));
 
