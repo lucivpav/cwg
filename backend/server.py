@@ -147,7 +147,7 @@ def update_infos_file(file_path, pinyins, definitions):
     shutil.copy(new_file_path, file_path);
 
 def log_error(parameters):
-    with open(LOG_FILE, 'w') as f:
+    with open(LOG_FILE, 'a') as f:
         f.write(parameters + os.linesep);
 
 if __name__ == '__main__':
