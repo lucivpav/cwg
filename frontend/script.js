@@ -1,10 +1,12 @@
 var id;
-const URL = "http://127.0.0.1:5002";
+const BASE_URL = "http://127.0.0.1"
+const URL = BASE_URL + ":5002";
 const GENERATOR_UNAVAILABLE_MSG = "Generator is unavailable. Please try again later.";
 const SERVER_FUCKED_UP_MSG = "Failed to generate sheet. Please enter different configuration or try again later.";
 
 function onLoad()
 {
+  document.getElementById("home_link").href = BASE_URL;
   var url = URL + "/retrieve_count";
   var req = new XMLHttpRequest();
   req.open("GET", url, true);
