@@ -17,6 +17,7 @@ COUNT_FILE = 'count.txt'
 INTERNAL_ERROR_MSG = 'Failed to generate sheet. Please enter different configuration or try again later.';
 
 count_lock = Lock();
+error_lock = Lock();
 
 class GenerateInfos(Resource):
     def get(self):
@@ -147,8 +148,12 @@ def update_infos_file(file_path, pinyins, definitions):
     shutil.copy(new_file_path, file_path);
 
 def log_error(parameters):
-    with open(LOG_FILE, 'a') as f:
-        f.write(parameters + os.linesep);
+    error_lock.acquire();
+    try:
+        with open(LOG_FILE, 'a') as f:
+            f.write(parameters + os.linesep);
+    finally:
+        error_lock.release();
 
 if __name__ == '__main__':
     SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__));
