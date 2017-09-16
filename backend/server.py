@@ -23,6 +23,7 @@ class GenerateInfos(Resource):
         characters = request.args.get('characters');
         if characters == None or len(characters) == 0:
             return jsonpify({'error': 'No characters provided'});
+        characters = characters.replace(' ', '');
         with tempfile.TemporaryDirectory() as path:
             dataset_path = get_dataset_path();
             try:
