@@ -6,6 +6,7 @@ import glob
 import os
 import math
 import getopt
+import re
 from enum import Enum
 from cairosvg import svg2png
 from reportlab.pdfgen import canvas
@@ -177,13 +178,20 @@ def convert_svg_to_png(svg_path, png_path):
             width=quality, height=quality);
 
 def convert_svgs_to_pngs(working_dir):
-    for file in glob.glob(os.path.join(working_dir, '*.svg')):
+    for file in list_files(working_dir, '.*\.svg'):
         file = os.path.join(working_dir, file[:-4]);
         convert_svg_to_png(file + '.svg', file + '.png');
 
-def delete_files(pattern):
-    for file in glob.glob(pattern):
-        os.remove(file);
+def delete_files(directory, pattern):
+    for file in list_files(directory, pattern):
+        os.remove(os.path.join(directory, file));
+
+def list_files(directory, pattern):
+    result = [];
+    for f in os.listdir(directory):
+        if re.match(pattern, f):
+            result.append(f);
+    return result;
 
 def shorten_definition(definition, max_w):
     w = stringWidth(definition, FONT_NAME, FONT_SIZE);
@@ -310,7 +318,7 @@ def draw_character_row(working_dir, canvas, character_info, y, guide):
     character = character_info.character;
     stroke_y = y - TEXT_PADDING - pinyin_h - TEXT_PADDING - STROKE_SIZE;
     stroke_x = pinyin_x;
-    stroke_order = sorted(glob.glob(character + '*.png'))[2:];
+    stroke_order = sorted(list_files(working_dir, character + '.*\.png'))[2:];
     stroke_order = [x[1:-4] for x in stroke_order];
     stroke_order = sorted([int(x) for x in stroke_order]); # sort numerically
     stroke_order = shorten_stroke_order(stroke_order, MAX_STROKES);
@@ -388,8 +396,8 @@ def generate_sheet(dataset_path, working_dir, title, guide):
         convert_svgs_to_pngs(working_dir);
         y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2-i_mod*CHARACTER_ROW_HEIGHT;
         draw_character_row(working_dir, c, info, y, guide);
-        delete_files(os.path.join(working_dir, '*.svg'));
-        delete_files(os.path.join(working_dir, '*.png'));
+        delete_files(working_dir, '.*\.svg');
+        delete_files(working_dir, '.*\.png');
     
     y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2 - \
         (CHARACTERS_PER_PAGE-1)*CHARACTER_ROW_HEIGHT;
@@ -451,7 +459,7 @@ def main(argv):
         if info_mode == sheet_mode:
             generate_infos(dataset, working_dir, characters);
             generate_sheet(dataset, working_dir, title, guide_val);
-            delete_files(INFOS_FILE);
+            delete_files(working_dir, INFOS_FILE.replace('.', '\.'));
         elif info_mode:
             generate_infos(dataset, working_dir, characters);
         else:
