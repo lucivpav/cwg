@@ -16,6 +16,8 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.lib.colors import CMYKColor
+from exceptions import GenException
+from combine_and_shorten_definition import combine_and_shorten_definition
 
 PROGRAM_NAME = 'gen.py';
 PROGRAM_FULLNAME = 'Chinese Worksheet Generator';
@@ -69,10 +71,6 @@ def usage():
             '   --dataset=<' + DATASET_NAME + ' path>\n' + \
             '   [--title=<custom title>]\n' + \
             '   [--guide=star]');
-
-class GenException(Exception):
-    def __init__(self, message):
-        super(Exception, self).__init__(message);
 
 class character_info:
     def __init__(self, character, radical, pinyin, radical_pinyin, \
@@ -138,7 +136,7 @@ def retrieve_info(dataset_path, character):
                 definition, stroke_order);
     except KeyError:
         raise GenException('Invalid dataset data for character ' + character);
-
+    
 def create_character_svg(working_dir, character_info):
     create_stroke_svg(working_dir, character_info.character, character_info,  \
                         len(character_info.stroke_order));
@@ -192,15 +190,6 @@ def list_files(directory, pattern):
         if re.match(pattern, f):
             result.append(f);
     return result;
-
-def shorten_definition(definition, max_w):
-    w = stringWidth(definition, FONT_NAME, FONT_SIZE);
-    if w <= max_w:
-        return definition;
-    for i, e in reversed(list(enumerate(definition))):
-        if e == ',' or e == ';':
-            return shorten_definition(definition[0:i], max_w);
-    raise GenException('Definition is too long and could not be shortened');
 
 def shorten_stroke_order(stroke_order, max_strokes):
     if len(stroke_order) <= max_strokes:
@@ -311,7 +300,8 @@ def draw_character_row(working_dir, canvas, character_info, y, guide):
     definition_y = pinyin_y;
     max_w = CHARACTER_ROW_WIDTH - SQUARE_SIZE - TEXT_PADDING \
             - pinyin_w - DEFINITION_PADDING - TEXT_PADDING;
-    definition = shorten_definition(character_info.definition, max_w);
+    definition = character_info.definition.replace(';',',').split(',');
+    definition = combine_and_shorten_definition(definition, ', ', max_w, FONT_NAME, FONT_SIZE);
     canvas.drawString(definition_x, definition_y, definition);
 
     # draw stroke order

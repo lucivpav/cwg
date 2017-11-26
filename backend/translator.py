@@ -1,0 +1,48 @@
+#!/usr/bin/python3
+import os
+
+# Translator Chinese characters/words -> English
+class Translator:
+    def __init__(self, cedict_path):
+        self.dictionary = open(os.path.join(cedict_path, 'data'), 'r');
+
+        # Read in the file once and build a list of line offsets
+        self.line_offset = []
+        offset = 0
+        for line in self.dictionary:
+            self.line_offset.append(offset)
+            offset += len(line.encode('utf-8'))+1
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.dictionary.close()
+
+    # Returns a list of possible translations
+    def translate(self, chinese):
+        lo = 0;
+        hi = len(self.line_offset)-1;
+        while lo <= hi:
+            mid = (int)((lo+hi)/2);
+            self.dictionary.seek(self.line_offset[mid]);
+            line = self.dictionary.readline();
+            characters = self.__parse_characters(line);
+            if characters < chinese:
+                lo = mid+1;
+            elif characters > chinese:
+                hi = mid-1;
+            else:
+                return self.__parse_definition(line);
+        return 'Not found';
+
+    def __parse_characters(self, line):
+        return line[:line.find(' ')];
+
+    # returns a list of possible translations
+    def __parse_definition(self, line):
+        substr = line[line.find('/')+1:line.rfind('/')];
+        return substr.split('/');
+
+translator = Translator('cedict');
+print(translator.translate('覺得'));
