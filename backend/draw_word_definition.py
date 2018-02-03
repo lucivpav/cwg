@@ -12,25 +12,13 @@ def draw_word_definition(canvas, font_name, font_size, xfrom, yfrom, xto, yto, d
     # assuming xfrom<xto, yfrom<yto
 
     # draw summation symbol
-    text_height = 7;
-    offset = 2;
-    xmid = xfrom+text_height+offset;
-    ymid = (yfrom+yto)/2;
-    
-    x1 = xmid;
-    y1 = ymid;
-    x2 = xto;
-    y2 = ymid;
-    x3 = xmid;
-    y3 = yto;
-    x4 = xto;
-    y4 = yto;
-    canvas.bezier(x1,y1, x2,y2, x3,y3, x4,y4);
 
-    y2 = y2-2*(y2-ymid);
-    y3 = y3-2*(y3-ymid);
-    y4 = y4-2*(y4-ymid);
-    canvas.bezier(x1,y1, x2,y2, x3,y3, x4,y4);
+    offset = 2;
+    text_height = 7;
+    xstart = xfrom+text_height+offset;
+
+    curve = get_closed_summation_curve(xstart, yfrom, xto, yto);
+    draw_summation_curve(canvas, curve);
 
     # draw definition
     canvas.setFont(font_name, font_size);
@@ -43,9 +31,64 @@ def draw_word_definition(canvas, font_name, font_size, xfrom, yfrom, xto, yto, d
     canvas.drawString(w/2 - tw/2, 0, text);
     canvas.restoreState();
 
+def draw_summation_curve(canvas, curve):
+    for subcurve in curve:
+        canvas.bezier(*subcurve);
+
+def get_closed_summation_curve(xfrom, yfrom, xto, yto):
+    curve = list();
+    ymid = (yfrom+yto)/2;
+    curve.append(get_closed_curve(xfrom, ymid, xto, yto));
+    curve.append(get_closed_curve(xfrom, ymid, xto, yfrom));
+    return curve;
+
+def get_opened_summation_curve(xfrom, yfrom, xto, yto):
+    curve = list();
+    xmid = (xfrom+xto)/2;
+    ymid = (yfrom+yto)/2;
+    curve.append(get_closed_curve(xfrom, ymid, xto, yfrom));
+    curve.append(get_opened_curve(xfrom, ymid, xmid, yto));
+    return curve;
+
+def get_closed_curve(xfrom, yfrom, xto, yto):
+    return [xfrom,yfrom, xto,yfrom, xfrom,yto, xto,yto];
+
+def get_opened_curve(xfrom, yfrom, xto, yto):
+    ymid = (yfrom+yto)/2;
+    return [xfrom,yfrom, xto,yfrom, xto,ymid, xto,yto];
+
+def summation_curve_demo(canvas):
+    xfrom = 200;
+    yfrom = 500;
+    w = 20;
+    h = 200;
+    # full
+    curve = get_closed_summation_curve(xfrom, yfrom, xfrom+w, yfrom+h);
+    draw_summation_curve(canvas, curve);
+
+    xfrom = xfrom + 30;
+    ymid = yfrom+h/2;
+    # buttom
+    curve = get_opened_summation_curve(xfrom, yfrom, xfrom+w, ymid);
+    draw_summation_curve(canvas, curve);
+
+    # top
+    curve = get_opened_summation_curve(xfrom, yfrom+h+1, xfrom+w, ymid+1);
+    draw_summation_curve(canvas, curve);
+
+    xfrom = xfrom + 30;
+    # buttom
+    curve = get_opened_summation_curve(xfrom, yfrom, xfrom+w, ymid);
+    draw_summation_curve(canvas, curve);
+    # opened top
+    curve = [get_opened_curve(xfrom+w, yfrom+h+1, xfrom+w/2, ymid+1)];
+    draw_summation_curve(canvas, curve);
+    
+
 font_name = 'DejaVuSans'
 c = canvas.Canvas('test.pdf', A4);
 pdfmetrics.registerFont(TTFont(font_name, font_name + '.ttf'));
 draw_word_definition(c, font_name, 13, 10,500,30,700, ['work' , 'transaction (as in a computer database']);
+summation_curve_demo(c);
 c.showPage();
 c.save();
