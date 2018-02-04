@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+from src.exceptions import GenException
 
 # Translator Chinese characters/words -> English
 class Translator:
@@ -13,10 +14,7 @@ class Translator:
             self.line_offset.append(offset)
             offset += len(line.encode('utf-8'))+1
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __del__(self):
         self.dictionary.close()
 
     # Returns a list of possible translations
@@ -34,7 +32,7 @@ class Translator:
                 hi = mid-1;
             else:
                 return self.__parse_definition(line);
-        return 'Not found';
+        raise GenException('Word ' + chinese + ' was not found in dictionary');
 
     def __parse_characters(self, line):
         return line[:line.find(' ')];
@@ -43,6 +41,3 @@ class Translator:
     def __parse_definition(self, line):
         substr = line[line.find('/')+1:line.rfind('/')];
         return substr.split('/');
-
-translator = Translator('cedict');
-print(translator.translate('覺得'));
