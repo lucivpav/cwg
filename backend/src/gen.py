@@ -23,7 +23,7 @@ PROGRAM_NAME = 'gen.py';
 PROGRAM_FULLNAME = 'Chinese Worksheet Generator';
 PROGRAM_WEBSITE = 'chineseworksheetgenerator.org';
 DATASET_NAME = 'Make Me a Hanzi';
-INFOS_FILE = 'character_infos.json';
+CHARACTERS_FILE = 'character_infos.json';
 SHEET_FILE = 'sheet.pdf'
 
 PAGE_SIZE = A4;
@@ -85,7 +85,7 @@ class character_info:
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True);
 
-def object_decoder(obj):
+def object_to_character_info(obj):
     return character_info(obj['character'], obj['radical'], obj['pinyin'], \
             obj['radical_pinyin'], obj['definition'], obj['stroke_order']);
 
@@ -334,6 +334,7 @@ def draw_page_number(canvas, page_number, font_size):
     canvas.setFont(FONT_NAME, font_size);
     canvas.drawString(PAGE_SIZE[0]-PAGE_NUMBER_X_OFFSET, PAGE_NUMBER_Y_OFFSET, \
             str(int(page_number)));
+   
 
 def generate_infos(dataset_path, working_dir, characters):
     if len(characters) > MAX_INPUT_CHARACTERS:
@@ -341,7 +342,7 @@ def generate_infos(dataset_path, working_dir, characters):
                 str(len(characters)) + \
                 '/' + str(MAX_INPUT_CHARACTERS) + ')');
 
-    with open(os.path.join(working_dir, INFOS_FILE), 'w') as f:
+    with open(os.path.join(working_dir, CHARACTERS_FILE), 'w') as f:
         for i in range(len(characters)):
             character = characters[i];
             info = retrieve_info(dataset_path, character);
@@ -359,12 +360,12 @@ def generate_sheet(dataset_path, working_dir, title, guide):
 
     infos = [];
 
-    with open(os.path.join(working_dir, INFOS_FILE), 'r') as f:
+    with open(os.path.join(working_dir, CHARACTERS_FILE), 'r') as f:
         while 1:
             line = f.readline();
             if line == '':
                 break;
-            infos.append(json.loads(line, object_hook=object_decoder));
+            infos.append(json.loads(line, object_hook=object_to_character_info));
 
     c = canvas.Canvas(os.path.join(working_dir, SHEET_FILE), PAGE_SIZE);
     pdfmetrics.registerFont(TTFont(FONT_NAME, FONT_NAME + '.ttf'));
@@ -449,7 +450,7 @@ def main(argv):
         if info_mode == sheet_mode:
             generate_infos(dataset, working_dir, characters);
             generate_sheet(dataset, working_dir, title, guide_val);
-            delete_files(working_dir, INFOS_FILE.replace('.', '\.'));
+            delete_files(working_dir, CHARACTERS_FILE.replace('.', '\.'));
         elif info_mode:
             generate_infos(dataset, working_dir, characters);
         else:
