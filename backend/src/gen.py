@@ -16,14 +16,17 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.lib.colors import CMYKColor
-from exceptions import GenException
+from src.exceptions import GenException
 from combine_and_shorten_definition import combine_and_shorten_definition
+from src.word_manager import Word, WordManager
 
 PROGRAM_NAME = 'gen.py';
 PROGRAM_FULLNAME = 'Chinese Worksheet Generator';
 PROGRAM_WEBSITE = 'chineseworksheetgenerator.org';
-DATASET_NAME = 'Make Me a Hanzi';
+MAKEMEAHANZI_NAME = 'Make Me a Hanzi';
+CEDICT_NAME = 'CEDICT';
 CHARACTERS_FILE = 'character_infos.json';
+WORDS_FILE = 'word_infos.json';
 SHEET_FILE = 'sheet.pdf'
 
 PAGE_SIZE = A4;
@@ -60,15 +63,17 @@ GUIDE_LINE_WIDTH = 5;
 def usage():
     print('usage: ' + PROGRAM_NAME + '\n' + \
             ' <default>\n' + \
-            '   --dataset=<' + DATASET_NAME + ' path>\n' + \
+            '   --makemeahanzi=<' + MAKEMEAHANZI_NAME + ' path>\n' + \
+            '   --cedict=<' + CEDICT_NAME + ' path>\n' + \
             '   --characters=<chinese characters>\n' + \
             '   [--title=<custom title>]\n' + \
             '   [--guide=star]\n' + \
             ' --info\n' + \
-            '   --dataset=<' + DATASET_NAME + ' path>\n' + \
+            '   --makemeahanzi=<' + MAKEMEAHANZI_NAME + ' path>\n' + \
+            '   --cedict=<' + CEDICT_NAME + ' path>\n' + \
             '   --characters=<chinese characters>\n' + \
             ' --sheet\n' + \
-            '   --dataset=<' + DATASET_NAME + ' path>\n' + \
+            '   --makemeahanzi=<' + MAKEMEAHANZI_NAME + ' path>\n' + \
             '   [--title=<custom title>]\n' + \
             '   [--guide=star]');
 
@@ -335,25 +340,37 @@ def draw_page_number(canvas, page_number, font_size):
     canvas.drawString(PAGE_SIZE[0]-PAGE_NUMBER_X_OFFSET, PAGE_NUMBER_Y_OFFSET, \
             str(int(page_number)));
    
-
-def generate_infos(dataset_path, working_dir, characters):
+# TODO: this should return list of words not found
+# and main should display them as warnings
+def generate_infos(makemeahanzi_path, cedict_path, working_dir, characters):
+    manager = WordManager(characters, cedict_path);
+    characters = manager.get_characters();
+    words = manager.get_words();
     if len(characters) > MAX_INPUT_CHARACTERS:
         raise GenException('Maximum number of characters exceeded (' + \
                 str(len(characters)) + \
                 '/' + str(MAX_INPUT_CHARACTERS) + ')');
 
-    with open(os.path.join(working_dir, CHARACTERS_FILE), 'w') as f:
+    # TODO: extract
+    # generate character infos
+    with open(os.path.join(working_dir, CHARACTERS_FILE), 'w') as cf:
         for i in range(len(characters)):
             character = characters[i];
-            info = retrieve_info(dataset_path, character);
+            info = retrieve_info(makemeahanzi_path, character);
             if info == -1:
                 raise GenException('Could not find data for character ' + \
                         character);
                 exit(1);
             j = info.toJSON();
-            f.write(j + '\n');
+            cf.write(j + '\n');
 
-def generate_sheet(dataset_path, working_dir, title, guide):
+    # generate word infos
+    with open(os.path.join(working_dir, WORDS_FILE), 'w') as wf:
+        for word in words:
+            j = word.toJSON();
+            wf.write(j + '\n');
+
+def generate_sheet(makemeahanzi_path, working_dir, title, guide):
     if len(title) > MAX_TITLE_LENGTH:
         raise GenException('Title length exceeded (' + str(len(title)) + \
                 '/' + str(MAX_TITLE_LENGTH) + ')');
@@ -382,7 +399,7 @@ def generate_sheet(dataset_path, working_dir, title, guide):
                     PAGE_SIZE[1]-HEADER_PADDING);
         info = infos[i];
         create_character_svg(working_dir, info);
-        create_radical_svg(dataset_path, working_dir, info);
+        create_radical_svg(makemeahanzi_path, working_dir, info);
         create_stroke_order_svgs(working_dir, info);
         convert_svgs_to_pngs(working_dir);
         y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2-i_mod*CHARACTER_ROW_HEIGHT;
@@ -409,17 +426,21 @@ def get_guide(guide_str):
         raise GenException('Invalid guide ' + guide_str);
 
 def main(argv):
-    dataset = '';
+    makemeahanzi = '';
+    cedict = ''
     characters = '';
     title = '';
     guide = '';
     info_mode = False;
     sheet_mode = False;
     opts, args = getopt.getopt(argv, '', \
-            ['dataset=', 'characters=', 'title=', 'guide=', 'info', 'sheet']);
+            ['makemeahanzi=', 'cedict=', 'characters=', \
+            'title=', 'guide=', 'info', 'sheet']);
     for opt, arg in opts:
-        if opt == '--dataset':
-            dataset = arg;
+        if opt == '--makemeahanzi':
+            makemeahanzi = arg;
+        elif opt == '--cedict':
+            cedict = arg;
         elif opt == '--characters':
             characters = arg;
         elif opt == '--title':
@@ -438,7 +459,8 @@ def main(argv):
         info_mode = True;
         sheet_mode = True;
 
-    if dataset == '' or (info_mode and characters == '') \
+    if makemeahanzi == '' or cedict == '' \
+            or (info_mode and characters == '') \
             or (sheet_mode and not info_mode and characters != '') \
             or (info_mode and not sheet_mode and title != ''):
         usage();
@@ -448,13 +470,14 @@ def main(argv):
     try:
         guide_val = get_guide(guide);
         if info_mode == sheet_mode:
-            generate_infos(dataset, working_dir, characters);
-            generate_sheet(dataset, working_dir, title, guide_val);
+            generate_infos(makemeahanzi, cedict, working_dir, characters);
+            generate_sheet(makemeahanzi, working_dir, title, guide_val);
+            # TODO: clean up WORDS_FILE
             delete_files(working_dir, CHARACTERS_FILE.replace('.', '\.'));
         elif info_mode:
-            generate_infos(dataset, working_dir, characters);
+            generate_infos(makemeahanzi, cedict, working_dir, characters);
         else:
-            generate_sheet(dataset, working_dir, title, guide_val);
+            generate_sheet(makemeahanzi, working_dir, title, guide_val);
     except GenException as e:
         print(str(e));
 

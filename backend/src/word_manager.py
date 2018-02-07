@@ -1,6 +1,8 @@
 from src.translator import Translator
 from src.exceptions import GenException
 
+import json
+
 class Word:
     def __init__(self, character_begin_index, character_end_index, definition):
         self.character_begin_index = character_begin_index;
