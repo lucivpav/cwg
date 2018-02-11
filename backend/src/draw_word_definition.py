@@ -85,10 +85,10 @@ def summation_curve_demo(canvas):
     draw_summation_curve(canvas, curve);
     
 
-font_name = 'DejaVuSans'
-c = canvas.Canvas('test.pdf', A4);
-pdfmetrics.registerFont(TTFont(font_name, font_name + '.ttf'));
-draw_word_definition(c, font_name, 13, 10,500,30,700, ['work' , 'transaction (as in a computer database']);
-summation_curve_demo(c);
-c.showPage();
-c.save();
+#font_name = 'DejaVuSans'
+#c = canvas.Canvas('test.pdf', A4);
+#pdfmetrics.registerFont(TTFont(font_name, font_name + '.ttf'));
+#draw_word_definition(c, font_name, 13, 10,500,30,700, ['work' , 'transaction (as in a computer database']);
+#summation_curve_demo(c);
+#c.showPage();
+#c.save();
