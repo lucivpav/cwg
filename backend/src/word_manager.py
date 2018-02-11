@@ -7,7 +7,7 @@ class Word:
     def __init__(self, character_begin_index, character_end_index, definition):
         self.character_begin_index = character_begin_index;
         self.character_end_index = character_end_index;
-        self.definition = definition;
+        self.definition = definition; #TODO: this should be string, not a list
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True);

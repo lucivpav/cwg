@@ -19,7 +19,11 @@ from reportlab.lib.colors import CMYKColor
 from src.exceptions import GenException
 from combine_and_shorten_definition import combine_and_shorten_definition
 from src.word_manager import Word, WordManager
-from draw_word_definition import draw_word_definition
+from draw_word_definition import draw_full_summation_curve, \
+                                draw_vertical_text, \
+                                draw_bottom_summation_curve, \
+                                draw_opened_top_summation_curve, \
+                                draw_top_summation_curve
 
 PROGRAM_NAME = 'gen.py';
 PROGRAM_FULLNAME = 'Chinese Worksheet Generator';
@@ -62,7 +66,9 @@ MAX_TITLE_LENGTH = 20;
 GUIDE_LINE_WIDTH = 5;
 FIRST_CHARACTER_ROW_Y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2;
 WORD_FONT_SIZE = 11;
-WORD_OFFSET = 3;
+SUMMATION_OFFSET = 3;
+SUMMATION_FROM_X = GRID_OFFSET*0.4; # word summation
+DEFINITION_SEPARATOR = ', ';
 
 def usage():
     print('usage: ' + PROGRAM_NAME + '\n' + \
@@ -103,6 +109,13 @@ class Guide(Enum):
     NONE = 1
     STAR = 2
     CROSS = 3
+
+# TODO: move to file!
+class SpanningTranslation:
+    # top and bottom translations: strings
+    def __init__(self, top_translation, bottom_translation):
+        self.top_translation = top_translation;
+        self.bottom_translation = bottom_translation;
 
 def get_character_json(file, character):
     while 1:
@@ -311,7 +324,9 @@ def draw_character_row(working_dir, canvas, character_info, y, guide):
     max_w = CHARACTER_ROW_WIDTH - SQUARE_SIZE - TEXT_PADDING \
             - pinyin_w - DEFINITION_PADDING - TEXT_PADDING;
     definition = character_info.definition.replace(';',',').split(',');
-    definition = combine_and_shorten_definition(definition, ', ', max_w, FONT_NAME, FONT_SIZE);
+    definition = combine_and_shorten_definition(definition, \
+                    DEFINITION_SEPARATOR, \
+                    max_w, FONT_NAME, FONT_SIZE).text;
     canvas.drawString(definition_x, definition_y, definition);
 
     # draw stroke order
@@ -345,17 +360,18 @@ def draw_page_number(canvas, page_number, font_size):
     canvas.drawString(PAGE_SIZE[0]-PAGE_NUMBER_X_OFFSET, PAGE_NUMBER_Y_OFFSET, \
             str(int(page_number)));
 
-def draw_words(canvas, character_infos, words, page_number):
+def draw_words(canvas, character_infos, words, page_number, spanning_map):
     page_index = page_number - 1;
     min_index = CHARACTERS_PER_PAGE * page_index;
     max_index = min_index + CHARACTERS_PER_PAGE - 1;
 
-    # draw end words
+    # draw bottom words
     for word in words:
         to = word.character_end_index;
         if word.character_begin_index < min_index and \
             to >= min_index and to <= max_index:
-            draw_end_word(canvas, to % CHARACTERS_PER_PAGE, word);
+            draw_bottom_word(canvas, to % CHARACTERS_PER_PAGE, \
+                            spanning_map[word].bottom_translation);
 
     # draw full words
     for word in words:
@@ -366,17 +382,50 @@ def draw_words(canvas, character_infos, words, page_number):
             draw_full_word(canvas, begin % CHARACTERS_PER_PAGE, \
                             end % CHARACTERS_PER_PAGE, word);
 
-    # TODO: draw begin words
+    # draw top words
+    for word in words:
+        begin = word.character_begin_index;
+        if word.character_end_index > max_index and \
+            begin >= min_index and begin <= max_index:
+            draw_top_word(canvas, begin % CHARACTERS_PER_PAGE, \
+                            spanning_map[word].top_translation);
 
-def draw_end_word(canvas, end_index, word):
-    # TODO
-    pass
+def draw_top_word(canvas, begin_index, top_translation):
+    yto = FIRST_CHARACTER_ROW_Y - begin_index*CHARACTER_ROW_HEIGHT;
+    ymid = int(yto/2);
+    if top_translation == '':
+        draw_opened_top_summation_curve(canvas, \
+                                        SUMMATION_FROM_X+SUMMATION_OFFSET, \
+                                        SUMMATION_OFFSET, GRID_OFFSET, \
+                                        yto);
+        return;
+    draw_vertical_text(canvas, FONT_NAME, WORD_FONT_SIZE, SUMMATION_FROM_X, \
+                        ymid, top_translation);
+    draw_top_summation_curve(canvas,
+                                SUMMATION_FROM_X+SUMMATION_OFFSET, \
+                                SUMMATION_OFFSET, GRID_OFFSET, \
+                                yto);
+
+def draw_bottom_word(canvas, end_index, bottom_translation):
+    yfrom = FIRST_CHARACTER_ROW_Y - (end_index+1)*CHARACTER_ROW_HEIGHT;
+    ymid = PAGE_SIZE[1] - int((PAGE_SIZE[1]-yfrom)/2);
+    draw_vertical_text(canvas, FONT_NAME, WORD_FONT_SIZE, \
+                        SUMMATION_FROM_X, ymid, bottom_translation);
+    draw_bottom_summation_curve(canvas, SUMMATION_FROM_X+SUMMATION_OFFSET, \
+                                yfrom, GRID_OFFSET, \
+                                PAGE_SIZE[1]-SUMMATION_OFFSET);
 
 def draw_full_word(canvas, begin_index, end_index, word):
-    h = CHARACTER_ROW_HEIGHT*(end_index-begin_index+1);
-    yfrom = FIRST_CHARACTER_ROW_Y+begin_index*CHARACTER_ROW_HEIGHT;
-    draw_word_definition(canvas, FONT_NAME, WORD_FONT_SIZE, WORD_OFFSET, \
-                        yfrom-h, GRID_OFFSET, yfrom, word.definition);
+    h = CHARACTER_ROW_HEIGHT*(end_index-begin_index+1); # TODO: offset!
+    yto = FIRST_CHARACTER_ROW_Y-begin_index*CHARACTER_ROW_HEIGHT;
+    ymid = yto-h/2;
+    text = combine_and_shorten_definition(word.definition, \
+                                            DEFINITION_SEPARATOR, h, \
+                                            FONT_NAME, WORD_FONT_SIZE).text;
+    draw_vertical_text(canvas, FONT_NAME, WORD_FONT_SIZE, \
+                                SUMMATION_FROM_X, ymid, text);
+    draw_full_summation_curve(canvas, SUMMATION_FROM_X+SUMMATION_OFFSET, \
+                                yto-h, GRID_OFFSET, yto);
    
 # TODO: this should return list of words not found
 # and main should display them as warnings
@@ -419,6 +468,51 @@ def load_data_from_json_file(working_dir, filename, parse_function):
             data.append(parse_function(j));
     return data;
 
+# returns map from word to spanning translation
+# not all words have a spanning translation
+def get_spanning_translations(characters, words):
+    # TODO: combine_... may throw!
+    spanning_translations = dict();
+
+    words_with_spanning_translations = [];
+    for word in words:
+        from_page_idx = int(word.character_begin_index / CHARACTERS_PER_PAGE);
+        to_page_idx = int(word.character_end_index / CHARACTERS_PER_PAGE);
+        if from_page_idx == to_page_idx-1:
+            words_with_spanning_translations.append(word);
+    
+    for word in words_with_spanning_translations:
+        # bottom translation
+        to_idx = word.character_end_index % CHARACTERS_PER_PAGE;
+        # TODO: there should be an offset!
+        yfrom = FIRST_CHARACTER_ROW_Y - (to_idx+1)*CHARACTER_ROW_HEIGHT;
+        max_w = PAGE_SIZE[1]-yfrom;
+        result = combine_and_shorten_definition(word.definition, \
+                                                DEFINITION_SEPARATOR, \
+                                                max_w, \
+                                                FONT_NAME, WORD_FONT_SIZE);
+        bottom_translation = result.text;
+
+        # top translation
+        orig_num_words = len(word.definition);
+        num_words = result.num_words;
+        if  orig_num_words == num_words:
+            tr = SpanningTranslation('', bottom_translation);
+            spanning_translations[word] = tr;
+            continue;
+        definition = word.definition[num_words:orig_num_words]; # rest
+        from_idx = word.character_begin_index % CHARACTERS_PER_PAGE;
+        # TODO: offset!
+        max_w = FIRST_CHARACTER_ROW_Y-from_idx*CHARACTER_ROW_HEIGHT;
+        result = combine_and_shorten_definition(definition, \
+                                                DEFINITION_SEPARATOR, \
+                                                max_w, \
+                                                FONT_NAME, WORD_FONT_SIZE);
+        top_translation = result.text;
+        tr = SpanningTranslation(top_translation, bottom_translation);
+        spanning_translations[word] = tr;
+    return spanning_translations;
+
 def generate_sheet(makemeahanzi_path, working_dir, title, guide):
     if len(title) > MAX_TITLE_LENGTH:
         raise GenException('Title length exceeded (' + str(len(title)) + \
@@ -433,6 +527,10 @@ def generate_sheet(makemeahanzi_path, working_dir, title, guide):
 
     c = canvas.Canvas(os.path.join(working_dir, SHEET_FILE), PAGE_SIZE);
     pdfmetrics.registerFont(TTFont(FONT_NAME, FONT_NAME + '.ttf'));
+
+    words_with_spanning_translation = get_spanning_translations( \
+                                        character_infos, words);
+
     draw_header(c, title, HEADER_FONT_SIZE, \
             PAGE_SIZE[1]-HEADER_PADDING);
     for i in range(len(character_infos)):
@@ -442,7 +540,8 @@ def generate_sheet(makemeahanzi_path, working_dir, title, guide):
             draw_footer(c, FOOTER_FONT_SIZE, y-CHARACTER_ROW_HEIGHT - \
                     GRID_OFFSET/2);
             draw_page_number(c, i / CHARACTERS_PER_PAGE, PAGE_NUMBER_FONT_SIZE);
-            draw_words(c, character_infos, words, page_number-1);
+            draw_words(c, character_infos, words, page_number-1, \
+                        words_with_spanning_translation);
             c.showPage();
             draw_header(c, title, HEADER_FONT_SIZE, \
                     PAGE_SIZE[1]-HEADER_PADDING);
@@ -458,9 +557,12 @@ def generate_sheet(makemeahanzi_path, working_dir, title, guide):
     
     y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2 - \
         (CHARACTERS_PER_PAGE-1)*CHARACTER_ROW_HEIGHT;
+    # TODO: extract
     draw_footer(c, FOOTER_FONT_SIZE, y-CHARACTER_ROW_HEIGHT - \
                     GRID_OFFSET/2);
     draw_page_number(c, page_number, PAGE_NUMBER_FONT_SIZE);
+    draw_words(c, character_infos, words, page_number, \
+            words_with_spanning_translation);
     c.showPage();
     c.save();
 
