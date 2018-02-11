@@ -19,6 +19,7 @@ from reportlab.lib.colors import CMYKColor
 from src.exceptions import GenException
 from combine_and_shorten_definition import combine_and_shorten_definition
 from src.word_manager import Word, WordManager
+from draw_word_definition import draw_word_definition
 
 PROGRAM_NAME = 'gen.py';
 PROGRAM_FULLNAME = 'Chinese Worksheet Generator';
@@ -59,6 +60,9 @@ PAGE_NUMBER_Y_OFFSET = 20;
 MAX_INPUT_CHARACTERS = 50;
 MAX_TITLE_LENGTH = 20;
 GUIDE_LINE_WIDTH = 5;
+FIRST_CHARACTER_ROW_Y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2;
+WORD_FONT_SIZE = 11;
+WORD_OFFSET = 3;
 
 def usage():
     print('usage: ' + PROGRAM_NAME + '\n' + \
@@ -77,6 +81,7 @@ def usage():
             '   [--title=<custom title>]\n' + \
             '   [--guide=star]');
 
+# TODO: rename to character
 class character_info:
     def __init__(self, character, radical, pinyin, radical_pinyin, \
             definition, stroke_order):
@@ -339,6 +344,39 @@ def draw_page_number(canvas, page_number, font_size):
     canvas.setFont(FONT_NAME, font_size);
     canvas.drawString(PAGE_SIZE[0]-PAGE_NUMBER_X_OFFSET, PAGE_NUMBER_Y_OFFSET, \
             str(int(page_number)));
+
+def draw_words(canvas, character_infos, words, page_number):
+    page_index = page_number - 1;
+    min_index = CHARACTERS_PER_PAGE * page_index;
+    max_index = min_index + CHARACTERS_PER_PAGE - 1;
+
+    # draw end words
+    for word in words:
+        to = word.character_end_index;
+        if word.character_begin_index < min_index and \
+            to >= min_index and to <= max_index:
+            draw_end_word(canvas, to % CHARACTERS_PER_PAGE, word);
+
+    # draw full words
+    for word in words:
+        begin = word.character_begin_index;
+        end = word.character_end_index;
+        if begin >= min_index and begin <= max_index and \
+            end >= min_index and end <= max_index:
+            draw_full_word(canvas, begin % CHARACTERS_PER_PAGE, \
+                            end % CHARACTERS_PER_PAGE, word);
+
+    # TODO: draw begin words
+
+def draw_end_word(canvas, end_index, word):
+    # TODO
+    pass
+
+def draw_full_word(canvas, begin_index, end_index, word):
+    h = CHARACTER_ROW_HEIGHT*(end_index-begin_index+1);
+    yfrom = FIRST_CHARACTER_ROW_Y+begin_index*CHARACTER_ROW_HEIGHT;
+    draw_word_definition(canvas, FONT_NAME, WORD_FONT_SIZE, WORD_OFFSET, \
+                        yfrom-h, GRID_OFFSET, yfrom, word.definition);
    
 # TODO: this should return list of words not found
 # and main should display them as warnings
@@ -370,39 +408,50 @@ def generate_infos(makemeahanzi_path, cedict_path, working_dir, characters):
             j = word.toJSON();
             wf.write(j + '\n');
 
+def load_data_from_json_file(working_dir, filename, parse_function):
+    data = [];
+    with open(os.path.join(working_dir, filename), 'r') as f:
+        while 1:
+            line = f.readline();
+            if line == '':
+                break;
+            j = json.loads(line);
+            data.append(parse_function(j));
+    return data;
+
 def generate_sheet(makemeahanzi_path, working_dir, title, guide):
     if len(title) > MAX_TITLE_LENGTH:
         raise GenException('Title length exceeded (' + str(len(title)) + \
                 '/' + str(MAX_TITLE_LENGTH) + ')');
 
-    infos = [];
+    character_infos = [];
+    words = [];
 
-    with open(os.path.join(working_dir, CHARACTERS_FILE), 'r') as f:
-        while 1:
-            line = f.readline();
-            if line == '':
-                break;
-            infos.append(json.loads(line, object_hook=object_to_character_info));
+    character_infos = load_data_from_json_file(working_dir, CHARACTERS_FILE, \
+                                                object_to_character_info);
+    words = load_data_from_json_file(working_dir, WORDS_FILE, Word.fromJSON);
 
     c = canvas.Canvas(os.path.join(working_dir, SHEET_FILE), PAGE_SIZE);
     pdfmetrics.registerFont(TTFont(FONT_NAME, FONT_NAME + '.ttf'));
     draw_header(c, title, HEADER_FONT_SIZE, \
             PAGE_SIZE[1]-HEADER_PADDING);
-    for i in range(len(infos)):
+    for i in range(len(character_infos)):
         i_mod = i % CHARACTERS_PER_PAGE;
+        page_number = int(i / CHARACTERS_PER_PAGE + 1);
         if i != 0 and i_mod == 0:
             draw_footer(c, FOOTER_FONT_SIZE, y-CHARACTER_ROW_HEIGHT - \
                     GRID_OFFSET/2);
             draw_page_number(c, i / CHARACTERS_PER_PAGE, PAGE_NUMBER_FONT_SIZE);
+            draw_words(c, character_infos, words, page_number-1);
             c.showPage();
             draw_header(c, title, HEADER_FONT_SIZE, \
                     PAGE_SIZE[1]-HEADER_PADDING);
-        info = infos[i];
+        info = character_infos[i];
         create_character_svg(working_dir, info);
         create_radical_svg(makemeahanzi_path, working_dir, info);
         create_stroke_order_svgs(working_dir, info);
         convert_svgs_to_pngs(working_dir);
-        y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2-i_mod*CHARACTER_ROW_HEIGHT;
+        y = FIRST_CHARACTER_ROW_Y-i_mod*CHARACTER_ROW_HEIGHT;
         draw_character_row(working_dir, c, info, y, guide);
         delete_files(working_dir, '.*\.svg');
         delete_files(working_dir, '.*\.png');
@@ -411,7 +460,7 @@ def generate_sheet(makemeahanzi_path, working_dir, title, guide):
         (CHARACTERS_PER_PAGE-1)*CHARACTER_ROW_HEIGHT;
     draw_footer(c, FOOTER_FONT_SIZE, y-CHARACTER_ROW_HEIGHT - \
                     GRID_OFFSET/2);
-    draw_page_number(c, i / CHARACTERS_PER_PAGE + 1, PAGE_NUMBER_FONT_SIZE);
+    draw_page_number(c, page_number, PAGE_NUMBER_FONT_SIZE);
     c.showPage();
     c.save();
 

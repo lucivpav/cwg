@@ -2,7 +2,7 @@ from reportlab.pdfbase.pdfmetrics import stringWidth
 from exceptions import GenException
 
 # sep: string separating translations in definition
-# definition: a string separated by characers in sep
+# definition: list of translations (strings)
 def combine_and_shorten_definition(definition, sep, max_w, font_name, font_size):
     if len(definition) == 0: # TODO!
         raise GenException('Definition is too long and could not be shortened');

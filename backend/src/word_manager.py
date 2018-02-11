@@ -12,10 +12,10 @@ class Word:
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True);
 
-    def fromJSON(self):
-        return word_info(obj['character_begin_index'], \
-                obj['character_end_index'], \
-                obj['definition']);
+    def fromJSON(json):
+        return Word(json['character_begin_index'], \
+                    json['character_end_index'], \
+                    json['definition']);
 
 class WordManager:
     WORDS_FILE = 'word_infos.json';
