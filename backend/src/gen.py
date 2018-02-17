@@ -468,6 +468,13 @@ def load_data_from_json_file(working_dir, filename, parse_function):
             data.append(parse_function(j));
     return data;
 
+def filter_out_words_with_empty_definition(words):
+    filtered = [];
+    for word in words:
+        if len(word.definition) != 0:
+            filtered.append(word);
+    return filtered;
+
 # returns map from word to spanning translation
 # not all words have a spanning translation
 def get_spanning_translations(characters, words):
@@ -524,6 +531,7 @@ def generate_sheet(makemeahanzi_path, working_dir, title, guide):
     character_infos = load_data_from_json_file(working_dir, CHARACTERS_FILE, \
                                                 object_to_character_info);
     words = load_data_from_json_file(working_dir, WORDS_FILE, Word.fromJSON);
+    words = filter_out_words_with_empty_definition(words);
 
     c = canvas.Canvas(os.path.join(working_dir, SHEET_FILE), PAGE_SIZE);
     pdfmetrics.registerFont(TTFont(FONT_NAME, FONT_NAME + '.ttf'));
