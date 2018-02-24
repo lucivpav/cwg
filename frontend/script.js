@@ -31,6 +31,7 @@ function generateInfos()
   document.getElementById("sheet_error").style.display = "none";
   document.getElementById("retrieve_error").style.display = "none";
   document.getElementById("characters_table").style.display = "none";
+  document.getElementById("words_table").style.display = "none";
   document.getElementById("confirm").style.display = "none";
   document.getElementById("download").style.display = "none";
   var characters = document.getElementById("characters").value;
@@ -65,7 +66,8 @@ function onInfosGenerated(response)
     showError("infos_error", response["error"]);
     return;
   }
-  createCharactersTable(response["infos"]);
+  createCharactersTable(response["characters"]);
+  createWordsTable(response["words"]);
   document.getElementById("confirm").style.display = "inline";
   id = response["id"];
 }
@@ -83,6 +85,29 @@ function createCharactersTable(infos)
   table += '</tbody></table></div>';
   document.getElementById("characters_table").innerHTML = table;
   document.getElementById("characters_table").style.display = "inline";
+}
+
+function createWordsTable(words)
+{
+  var table = '<div class="table-responsive"><table class="table" id="actual_words_table"><thread><tr><th>Words</th><th>Definition</th></tr></thead><tbody>';
+  for (i = 0 ; i < words.length ; i++)
+  {
+    row = '<tr><td class="narrow"><input type="text" class="form-control input-lg" value="' + words[i].characters + '" disabled></td>' +
+      '<td class="wide"><div class="form-inline"><input type="text" id="word_definition' + i + '" class="form-control input-lg tm-input tm-input-large"></div></td></tr>';
+    table += row;
+  }
+  table += '</tbody></table></div>';
+  document.getElementById("words_table").innerHTML = table;
+  document.getElementById("words_table").style.display = "inline";
+
+  $(".tm-input").tagsManager();
+
+  // add word tags
+  for (i = 0 ; i < words.length ; i++)
+  {
+    for (j in words[i].definition)
+      $("#word_definition" + i).tagsManager('pushTag', words[i].definition[j]);
+  }
 }
 
 function generateSheet()
@@ -104,6 +129,8 @@ function generateSheet()
   var url = URL + "/generate_sheet?id=" + id +
             "&guide=" + guide +
             "&title=" + title;
+
+  // add character parameters
   var n = document.getElementById("actual_characters_table").rows.length-1;
   for ( i = 0 ; i < n ; i++ )
   {
@@ -111,6 +138,17 @@ function generateSheet()
     var definition = document.getElementById("definition" + i).value;
     url += "&pinyin" + i + "=" + pinyin;
     url += "&definition" + i + "=" + definition;
+  }
+  
+  // add words parameters
+  n = document.getElementById("actual_words_table").rows.length-1;
+  for ( i = 0 ; i < n ; i++ )
+  {
+    var tags = $("#word_definition" + i).tagsManager('tags');
+    for ( j = 0 ; j < tags.length ; j++ )
+    {
+      url += "&word" + i + "definition" + j + "=" + tags[j];
+    }
   }
 
   var req = new XMLHttpRequest();

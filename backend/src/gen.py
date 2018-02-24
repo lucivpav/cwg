@@ -32,7 +32,7 @@ MAKEMEAHANZI_NAME = 'Make Me a Hanzi';
 CEDICT_NAME = 'CEDICT';
 CHARACTERS_FILE = 'character_infos.json';
 WORDS_FILE = 'word_infos.json';
-SHEET_FILE = 'sheet.pdf'
+SHEET_FILE = 'sheet.pdf';
 
 PAGE_SIZE = A4;
 CHARACTERS_PER_PAGE = 5;

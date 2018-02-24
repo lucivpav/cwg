@@ -7,11 +7,17 @@ import json
 import os
 import tempfile
 import shutil
+import getopt
+import sys
+from exceptions import GenException
 from threading import Lock
-from gen import generate_infos, generate_sheet, GenException, \
-                INFOS_FILE, SHEET_FILE, get_guide
+from gen import generate_infos, generate_sheet, \
+                CHARACTERS_FILE, WORDS_FILE, SHEET_FILE, get_guide, \
+                MAKEMEAHANZI_NAME, CEDICT_NAME
 
-DATASET_NAME = 'makemeahanzi';
+MAKEMEAHANZI_PATH = '';
+CEDICT_PATH = '';
+PROGRAM_NAME = 'server.py';
 LOG_FILE = 'errors.log';
 COUNT_FILE = 'count.txt'
 INTERNAL_ERROR_MSG = 'Failed to generate sheet. Please enter different configuration or try again later.';
@@ -25,36 +31,21 @@ class GenerateInfos(Resource):
         if characters == None or len(characters) == 0:
             return jsonpify({'error': 'No characters provided'});
         characters = characters.replace(' ', '');
-        with tempfile.TemporaryDirectory() as path:
-            dataset_path = get_dataset_path();
-            try:
-                generate_infos(dataset_path, path, characters);
-            except GenException as e:
-                log_error('generate_infos ' + characters);
-                return jsonpify({'error': str(e)});
-            except:
-                log_error('generate_infos ' + characters);
-                return jsonpify({'error': INTERNAL_ERROR_MSG});
+        path = tempfile.mkdtemp();
+        try:
+            generate_infos(MAKEMEAHANZI_PATH, CEDICT_PATH, path, characters);
+        except GenException as e:
+            log_error('generate_infos ' + characters);
+            return jsonpify({'error': str(e)});
+        except Exception as e:
+            log_error('generate_infos ' + characters + '\n' + str(e));
+            return jsonpify({'error': INTERNAL_ERROR_MSG});
 
-            with open(os.path.join(path, INFOS_FILE)) as f:
-                infos = [];
-                while 1:
-                    line = f.readline();
-                    if line == '':
-                        break;
-                    info = json.loads(line);
-                    character = info['character'];
-                    definition = info['definition'];
-                    pinyin = info['pinyin'][0];
-                    i = {'character': character, \
-                            'definition': definition, \
-                            'pinyin': pinyin}
-                    infos.append(i);
+        characters = get_characters(path);
+        words = get_words(path, characters);
 
-                new_dir = tempfile.mkdtemp();
-                shutil.copy(os.path.join(path, INFOS_FILE), new_dir);
-                result = { "id": new_dir, "infos": infos };
-                return jsonpify(result);
+        result = { 'id': path, 'characters': characters, 'words': words };
+        return jsonpify(result);
 
 class GenerateSheet(Resource):
     def get(self):
@@ -70,27 +61,19 @@ class GenerateSheet(Resource):
         except GenException as e:
             return jsonpify({'error': str(e)});
 
-        pinyins = [];
-        definitions = [];
-        i = 0;
-        while ('pinyin' + str(i)) in request.args:
-            pinyins.append(request.args.get('pinyin' + str(i)));
-            definitions.append(request.args.get('definition' + str(i)));
-            i += 1;
+        update_characters_file(temp_path, request.args);
+        update_words_file(temp_path, request.args);
 
-        file_path = os.path.join(temp_path, INFOS_FILE);
-        update_infos_file(file_path, pinyins, definitions);
-        dataset_path = get_dataset_path();
         error_msg = 'generate_sheet ' + title + ' ' + str(guide);
         try:
-            generate_sheet(dataset_path, temp_path, title, guide);
+            generate_sheet(MAKEMEAHANZI_PATH, temp_path, title, guide);
         except GenException as e:
             log_error(error_msg);
             shutil.rmtree(temp_path);
             return jsonpify({'error': str(e)});
         except:
             log_error(error_msg);
-            return jsonpify({'error': INTERNAL_ERROR_MSG});
+            return jsonpify({'error': str(e)});
 
         # increment count
         count_lock.acquire();
@@ -125,14 +108,19 @@ class RetrieveCount(Resource):
         finally:
             count_lock.release();
 
-def get_dataset_path():
-    dataset_path = os.path.dirname(SCRIPT_PATH); # go up
-    dataset_path = os.path.join(dataset_path, DATASET_NAME);
-    return dataset_path;
+def update_characters_file(working_directory, request_args):
+    pinyins = [];
+    definitions = [];
+    i = 0;
+    while ('pinyin' + str(i)) in request_args:
+        pinyins.append(request_args.get('pinyin' + str(i)));
+        definitions.append(request_args.get('definition' + str(i)));
+        i += 1;
+    
+    file_path = os.path.join(working_directory, CHARACTERS_FILE);
 
-def update_infos_file(file_path, pinyins, definitions):
-    new_file_name = 'new.json';
-    new_file_path = os.path.join(os.path.dirname(file_path), new_file_name);
+    new_file_name = 'new_' + CHARACTERS_FILE;
+    new_file_path = os.path.join(working_directory, new_file_name);
     with open(file_path, 'r') as f_orig:
         with open(new_file_path, 'w') as f_new:
             i = 0;
@@ -147,6 +135,77 @@ def update_infos_file(file_path, pinyins, definitions):
                 i += 1;
     shutil.copy(new_file_path, file_path);
 
+def update_words_file(working_directory, request_args):
+    file_path = os.path.join(working_directory, WORDS_FILE);
+    word_cnt = 0;
+    with open(file_path, 'r') as f_orig:
+        while 1:
+            line = f_orig.readline();
+            if line == '':
+                break;
+            word_cnt += 1;
+
+    # TODO: may throw if len(words_definitions) < number of words in WORDS_FILE
+    words_definitions = [];
+    for i in range(word_cnt):
+        j = 0;
+        definitions = [];
+        while ('word' + str(i) + 'definition' + str(j)) in request_args:
+            definitions.append(request_args.get('word' + str(i) + 'definition' + str(j)));
+            j += 1;
+        words_definitions.append(definitions);
+
+    new_file_name = 'new_' + WORDS_FILE;
+    new_file_path = os.path.join(working_directory, new_file_name);
+    with open(file_path, 'r') as f_orig:
+        with open(new_file_path, 'w') as f_new:
+            i = 0;
+            while 1:
+                line = f_orig.readline();
+                if line == '':
+                    break;
+                word = json.loads(line);
+                word['definition'] = words_definitions[i];
+                f_new.write(json.dumps(word) + '\n');
+                i += 1;
+    shutil.copy(new_file_path, file_path);
+
+def get_characters(working_directory):
+    characters = [];
+    with open(os.path.join(working_directory, CHARACTERS_FILE)) as f:
+        while 1:
+            line = f.readline();
+            if line == '':
+                break;
+            info = json.loads(line);
+            character = info['character'];
+            definition = info['definition'];
+            pinyin = info['pinyin'][0];
+            i = {'character': character, \
+                    'definition': definition, \
+                    'pinyin': pinyin}
+            characters.append(i);
+    return characters;
+
+def get_words(working_directory, characters):
+    words = [];
+    with open(os.path.join(working_directory, WORDS_FILE)) as f:
+        while 1:
+            line = f.readline();
+            if line == '':
+                break;
+            word = json.loads(line);
+
+            chars = [];
+            for i in range(word['character_begin_index'], \
+                            word['character_end_index']+1):
+                chars.append(characters[i]['character']);
+
+            w = {'characters': ''.join(chars), \
+                    'definition': word['definition']}
+            words.append(w);
+    return words;
+
 def log_error(parameters):
     error_lock.acquire();
     try:
@@ -155,8 +214,23 @@ def log_error(parameters):
     finally:
         error_lock.release();
 
-if __name__ == '__main__':
-    SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__));
+def usage():
+    print('usage: ' + PROGRAM_NAME + '\n' + \
+            '   --makemeahanzi=<' + MAKEMEAHANZI_NAME + ' path>\n' + \
+            '   --cedict=<' + CEDICT_NAME + ' path>');
+
+def main(argv):
+    global MAKEMEAHANZI_PATH, CEDICT_PATH;
+    opts, args = getopt.getopt(argv, '', ['makemeahanzi=', 'cedict=']);
+    for opt, arg in opts:
+        if opt == '--makemeahanzi':
+            MAKEMEAHANZI_PATH = arg;
+        elif opt == '--cedict':
+            CEDICT_PATH = arg;
+    if MAKEMEAHANZI_PATH == '' or CEDICT_PATH == '':
+        usage();
+        exit(1);
+
     app = Flask(__name__);
     cors = CORS(app);
     app.config['CORS_HEADERS'] = 'Content-Type';
@@ -166,3 +240,5 @@ if __name__ == '__main__':
     api.add_resource(RetrieveSheet, '/retrieve_sheet');
     api.add_resource(RetrieveCount, '/retrieve_count');
     app.run(port='5002', threaded=True);
+if __name__ == '__main__':
+    main(sys.argv[1:]);
