@@ -7,6 +7,8 @@ import os
 import math
 import getopt
 import re
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), \
+                                                                '..')));
 from enum import Enum
 from cairosvg import svg2png
 from reportlab.pdfgen import canvas
