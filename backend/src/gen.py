@@ -618,7 +618,8 @@ def main(argv):
         info_mode = True;
         sheet_mode = True;
 
-    if makemeahanzi == '' or cedict == '' \
+    if makemeahanzi == '' \
+            or (info_mode and cedict == '') \
             or (info_mode and characters == '') \
             or (sheet_mode and not info_mode and characters != '') \
             or (info_mode and not sheet_mode and title != ''):
