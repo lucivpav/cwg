@@ -89,6 +89,8 @@ function createCharactersTable(infos)
 
 function createWordsTable(words)
 {
+  if ( words.length == 0 )
+    return;
   var table = '<div class="table-responsive"><table class="table" id="actual_words_table"><thread><tr><th>Words</th><th>Definition</th></tr></thead><tbody>';
   for (i = 0 ; i < words.length ; i++)
   {
