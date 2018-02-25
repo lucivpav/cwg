@@ -431,8 +431,10 @@ def generate_infos(makemeahanzi_path, cedict_path, working_dir, characters):
                 str(len(characters)) + \
                 '/' + str(MAX_INPUT_CHARACTERS) + ')');
 
-    # TODO: extract
-    # generate character infos
+    generate_character_infos(working_dir, characters, makemeahanzi_path);
+    generate_word_infos(working_dir, words);
+
+def generate_character_infos(working_dir, characters, makemeahanzi_path):
     with open(os.path.join(working_dir, CHARACTERS_FILE), 'w') as cf:
         for i in range(len(characters)):
             character = characters[i];
@@ -440,11 +442,10 @@ def generate_infos(makemeahanzi_path, cedict_path, working_dir, characters):
             if info == -1:
                 raise GenException('Could not find data for character ' + \
                         character);
-                exit(1);
             j = info.toJSON();
             cf.write(j + '\n');
 
-    # generate word infos
+def generate_word_infos(working_dir, words):
     with open(os.path.join(working_dir, WORDS_FILE), 'w') as wf:
         for word in words:
             j = word.toJSON();
