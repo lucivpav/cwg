@@ -23,7 +23,7 @@ Allows one to generate Chinese practice worksheets.
 * Place TagManager folder into *frontend* folder
 
 ## Words
-* Use parantheses to group multiple characters together. This will add definition of such words into the sheet.
+* Use parentheses to group multiple characters together. This will add definition of such words into the sheet.
 
 ## Command line worksheet generation
 ### Show usage
