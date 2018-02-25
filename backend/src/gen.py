@@ -428,6 +428,8 @@ def draw_full_word(canvas, begin_index, end_index, word):
 # TODO: this should return list of words not found
 # and main should display them as warnings
 def generate_infos(makemeahanzi_path, cedict_path, working_dir, characters):
+    if ( len(characters) == 0 ):
+        raise GenException('No characters provided');
     manager = WordManager(characters, cedict_path);
     characters = manager.get_characters();
     words = manager.get_words();
