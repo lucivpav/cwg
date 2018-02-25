@@ -9,6 +9,7 @@ import tempfile
 import shutil
 import getopt
 import sys
+import datetime
 from exceptions import GenException
 from threading import Lock
 from gen import generate_infos, generate_sheet, \
@@ -32,13 +33,14 @@ class GenerateInfos(Resource):
             return jsonpify({'error': 'No characters provided'});
         characters = characters.replace(' ', '');
         path = tempfile.mkdtemp();
+        error_msg = 'generate_infos ' + characters + '\n';
         try:
             generate_infos(MAKEMEAHANZI_PATH, CEDICT_PATH, path, characters);
         except GenException as e:
-            log_error('generate_infos ' + characters);
+            log_error(path, error_msg + str(e));
             return jsonpify({'error': str(e)});
         except Exception as e:
-            log_error('generate_infos ' + characters + '\n' + str(e));
+            log_error(path, error_msg + str(e));
             return jsonpify({'error': INTERNAL_ERROR_MSG});
 
         characters = get_characters(path);
@@ -64,16 +66,15 @@ class GenerateSheet(Resource):
         update_characters_file(temp_path, request.args);
         update_words_file(temp_path, request.args);
 
-        error_msg = 'generate_sheet ' + title + ' ' + str(guide);
+        error_msg = 'generate_sheet ' + title + ' ' + str(guide) + '\n';
         try:
             generate_sheet(MAKEMEAHANZI_PATH, temp_path, title, guide);
         except GenException as e:
-            log_error(error_msg);
-            shutil.rmtree(temp_path);
+            log_error(temp_path, error_msg + str(e));
             return jsonpify({'error': str(e)});
-        except:
-            log_error(error_msg);
-            return jsonpify({'error': str(e)});
+        except Exception as e:
+            log_error(temp_path, error_msg + str(e));
+            return jsonpify({'error': INTERNAL_ERROR_MSG});
 
         # increment count
         count_lock.acquire();
@@ -206,11 +207,16 @@ def get_words(working_directory, characters):
             words.append(w);
     return words;
 
-def log_error(parameters):
+def log_error(working_directory, message):
     error_lock.acquire();
     try:
         with open(LOG_FILE, 'a') as f:
-            f.write(parameters + os.linesep);
+            f.write(str(datetime.datetime.now()));
+            f.write(os.linesep);
+            f.write(working_directory);
+            f.write(os.linesep);
+            f.write(message);
+            f.write(os.linesep + os.linesep);
     finally:
         error_lock.release();
 

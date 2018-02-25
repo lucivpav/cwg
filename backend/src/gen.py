@@ -7,8 +7,6 @@ import os
 import math
 import getopt
 import re
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), \
-                                                                '..')));
 from enum import Enum
 from cairosvg import svg2png
 from reportlab.pdfgen import canvas
@@ -18,9 +16,9 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.lib.colors import CMYKColor
-from src.exceptions import GenException
+from exceptions import GenException
 from combine_and_shorten_definition import combine_and_shorten_definition
-from src.word_manager import Word, WordManager
+from word_manager import Word, WordManager
 from draw_word_definition import draw_full_summation_curve, \
                                 draw_vertical_text, \
                                 draw_bottom_summation_curve, \

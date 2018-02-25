@@ -1,5 +1,5 @@
-from src.translator import Translator
-from src.exceptions import GenException
+from translator import Translator
+from exceptions import GenException
 
 import json
 
