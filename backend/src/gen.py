@@ -632,8 +632,8 @@ def main(argv):
         if info_mode == sheet_mode:
             generate_infos(makemeahanzi, cedict, working_dir, characters);
             generate_sheet(makemeahanzi, working_dir, title, guide_val);
-            # TODO: clean up WORDS_FILE
             delete_files(working_dir, CHARACTERS_FILE.replace('.', '\.'));
+            delete_files(working_dir, WORDS_FILE.replace('.', '\.'));
         elif info_mode:
             generate_infos(makemeahanzi, cedict, working_dir, characters);
         else:
