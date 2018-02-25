@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import os
-from src.exceptions import GenException
+from exceptions import GenException
 
 # Translator Chinese characters/words -> English
 class Translator:

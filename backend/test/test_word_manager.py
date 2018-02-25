@@ -1,6 +1,10 @@
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), \
+                                                                '../src')));
 import unittest
-from src.word_manager import WordManager, Word
-from src.exceptions import GenException
+from word_manager import WordManager, Word
+from exceptions import GenException
 
 class TestWordManager(unittest.TestCase):
     CEDICT_PATH = '../cedict';
