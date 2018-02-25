@@ -1,20 +1,29 @@
 # Chinese Worksheet Generator
 Allows one to generate Chinese practice worksheets.
 
-![](http://i.imgur.com/idXo0Pj.png)
+![](http://i.imgur.com/HH9eKtC.png)
 
 ## Features
 * Simplified and traditional Chinese
 * Stroke order
 * Radicals
+* Words
 * Customizable pinyin and translation
 * Customizable title and grid style
 
 ## Dependencies
-* makemeahanzi dataset
+* [Make Me a Hanzi dataset](https://github.com/skishore/makemeahanzi)
+* [CEDICT dataset](https://www.mdbg.net/chinese/dictionary?page=cedict)
 * cairosvg
 * reportlab
 * flask
+* [TagManager](https://maxfavilli.com/jquery-tag-manager)
+
+## Installation notes
+* Place TagManager folder into *frontend* folder
+
+## Words
+* Use parantheses to group multiple characters together. This will add definition of such words into the sheet.
 
 ## Command line worksheet generation
 ### Show usage
@@ -23,15 +32,21 @@ gen.py
 ```
 ### Generate worksheet
 ```
-gen.py --dataset=$DATASET_PATH --characters='你好' --title='Vocabulary' --guide='star'
+gen.py --makemeahanzi=$MAKEMEAHANZI_PATH --cedict=$CEDICT_PATH --characters='你好' --title='Vocabulary' --guide='star'
 ```
-### Customize pinyin and translation
+### Customize pinyin, translation and words
 ```
-gen.py --dataset=$DATASET_PATH --characters='你好' --info # Generate character_infos.json
+gen.py --makemeahanzi=$MAKEMEAHANZI_PATH --cedict=$CEDICT_PATH --characters='(你好)' --info # Generate character_infos.json
 
-# You may edit the 'character_infos.json' to customize pinyin and translation
+# You may edit the 'character_infos.json' and 'word_infos.json' to customize pinyin, translation and words
 
-gen.py --dataset=$DATASET_PATH --title='Vocabulary' --guide='star' --sheet # Generate worksheet
+gen.py --makemeahanzi=$MAKEMEAHANZI_PATH --title='Vocabulary' --guide='star' --sheet # Generate worksheet
+```
+
+## Running tests
+```
+cd backend
+python3 -m unittest discover
 ```
 
 ## License
