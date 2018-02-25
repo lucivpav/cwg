@@ -30,10 +30,12 @@ class WordManager:
     # characters_and_words: (example) '（你好)我叫(保羅)'
     def __init__(self, characters_and_words, cedict_path):
         self.characters_and_words = characters_and_words;
+        self.translator = None;
         self.translator = Translator(cedict_path);
 
     def __del__(self):
-        self.translator.__del__();
+        if self.translator != None:
+            self.translator.__del__();
 
     # throws if invalid parentheses configuration detected or word length
     # is out of bounds

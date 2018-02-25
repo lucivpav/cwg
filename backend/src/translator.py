@@ -5,6 +5,7 @@ from exceptions import GenException
 # Translator Chinese characters/words -> English
 class Translator:
     def __init__(self, cedict_path):
+        self.dictionary = None;
         self.dictionary = open(os.path.join(cedict_path, 'data'), 'r');
 
         # Read in the file once and build a list of line offsets
@@ -15,7 +16,8 @@ class Translator:
             offset += len(line.encode('utf-8'))+1
 
     def __del__(self):
-        self.dictionary.close()
+        if self.dictionary != None:
+            self.dictionary.close()
 
     # Returns a list of possible translations
     def translate(self, chinese):
