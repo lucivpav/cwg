@@ -17,6 +17,7 @@ Allows one to generate Chinese practice worksheets.
 * cairosvg
 * reportlab
 * flask
+* [SourceHanSansTC-Normal.ttf](https://github.com/be5invis/source-han-sans-ttf/releases)
 * [TagManager](https://maxfavilli.com/jquery-tag-manager)
 
 ## Installation notes
