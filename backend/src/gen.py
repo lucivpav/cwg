@@ -19,11 +19,11 @@ from reportlab.lib.colors import CMYKColor
 from exceptions import GenException
 from combine_and_shorten_definition import combine_and_shorten_definition
 from word_manager import Word, WordManager
-from draw_word_definition import draw_full_summation_curve, \
-                                draw_vertical_text, \
-                                draw_bottom_summation_curve, \
-                                draw_opened_top_summation_curve, \
-                                draw_top_summation_curve
+from draw import draw_full_summation_curve, \
+                    draw_vertical_text, \
+                    draw_bottom_summation_curve, \
+                    draw_opened_top_summation_curve, \
+                    draw_top_summation_curve
 
 PROGRAM_NAME = 'gen.py';
 PROGRAM_FULLNAME = 'Chinese Worksheet Generator';
