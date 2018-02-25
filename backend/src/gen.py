@@ -16,6 +16,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.lib.colors import CMYKColor
+from spanning_translation import SpanningTranslation
 from exceptions import GenException
 from combine_and_shorten_definition import combine_and_shorten_definition
 from word_manager import Word, WordManager
