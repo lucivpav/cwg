@@ -66,6 +66,7 @@ MAX_TITLE_LENGTH = 20;
 GUIDE_LINE_WIDTH = 5;
 FIRST_CHARACTER_ROW_Y = PAGE_SIZE[1]-HEADER_PADDING-GRID_OFFSET/2;
 WORD_FONT_SIZE = 11;
+WORD_OFFSET = CHARACTER_ROW_HEIGHT/15;
 SUMMATION_OFFSET = 3;
 SUMMATION_FROM_X = GRID_OFFSET*0.4; # word summation
 DEFINITION_SEPARATOR = ', ';
@@ -385,7 +386,8 @@ def draw_words(canvas, character_infos, words, page_number, spanning_map):
 
 def draw_top_word(canvas, begin_index, top_translation):
     yto = FIRST_CHARACTER_ROW_Y - begin_index*CHARACTER_ROW_HEIGHT;
-    ymid = int(yto/2);
+    yto_word = yto - WORD_OFFSET;
+    ymid = int(yto_word/2);
     if top_translation == '':
         draw_opened_top_summation_curve(canvas, \
                                         SUMMATION_FROM_X+SUMMATION_OFFSET, \
@@ -401,7 +403,8 @@ def draw_top_word(canvas, begin_index, top_translation):
 
 def draw_bottom_word(canvas, end_index, bottom_translation):
     yfrom = FIRST_CHARACTER_ROW_Y - (end_index+1)*CHARACTER_ROW_HEIGHT;
-    ymid = PAGE_SIZE[1] - int((PAGE_SIZE[1]-yfrom)/2);
+    yfrom_word = yfrom + WORD_OFFSET;
+    ymid = PAGE_SIZE[1] - int((PAGE_SIZE[1]-yfrom_word)/2);
     draw_vertical_text(canvas, FONT_NAME, WORD_FONT_SIZE, \
                         SUMMATION_FROM_X, ymid, bottom_translation);
     draw_bottom_summation_curve(canvas, SUMMATION_FROM_X+SUMMATION_OFFSET, \
@@ -409,9 +412,10 @@ def draw_bottom_word(canvas, end_index, bottom_translation):
                                 PAGE_SIZE[1]-SUMMATION_OFFSET);
 
 def draw_full_word(canvas, begin_index, end_index, word):
-    h = CHARACTER_ROW_HEIGHT*(end_index-begin_index+1); # TODO: offset!
+    h = CHARACTER_ROW_HEIGHT*(end_index-begin_index+1);
+    h_word = h-2*WORD_OFFSET;
     yto = FIRST_CHARACTER_ROW_Y-begin_index*CHARACTER_ROW_HEIGHT;
-    ymid = yto-h/2;
+    ymid = yto-WORD_OFFSET-h_word/2;
     text = combine_and_shorten_definition(word.definition, \
                                             DEFINITION_SEPARATOR, h, \
                                             FONT_NAME, WORD_FONT_SIZE).text;
@@ -485,8 +489,8 @@ def get_spanning_translations(characters, words):
     for word in words_with_spanning_translations:
         # bottom translation
         to_idx = word.character_end_index % CHARACTERS_PER_PAGE;
-        # TODO: there should be an offset!
-        yfrom = FIRST_CHARACTER_ROW_Y - (to_idx+1)*CHARACTER_ROW_HEIGHT;
+        yfrom = FIRST_CHARACTER_ROW_Y - (to_idx+1)*CHARACTER_ROW_HEIGHT + \
+                WORD_OFFSET;
         max_w = PAGE_SIZE[1]-yfrom;
         result = combine_and_shorten_definition(word.definition, \
                                                 DEFINITION_SEPARATOR, \
@@ -503,8 +507,8 @@ def get_spanning_translations(characters, words):
             continue;
         definition = word.definition[num_words:orig_num_words]; # rest
         from_idx = word.character_begin_index % CHARACTERS_PER_PAGE;
-        # TODO: offset!
-        max_w = FIRST_CHARACTER_ROW_Y-from_idx*CHARACTER_ROW_HEIGHT;
+        max_w = FIRST_CHARACTER_ROW_Y-from_idx*CHARACTER_ROW_HEIGHT - \
+                WORD_OFFSET;
         result = combine_and_shorten_definition(definition, \
                                                 DEFINITION_SEPARATOR, \
                                                 max_w, \
