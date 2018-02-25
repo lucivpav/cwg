@@ -132,26 +132,8 @@ function generateSheet()
             "&guide=" + guide +
             "&title=" + title;
 
-  // add character parameters
-  var n = document.getElementById("actual_characters_table").rows.length-1;
-  for ( i = 0 ; i < n ; i++ )
-  {
-    var pinyin = document.getElementById("pinyin" + i).value;
-    var definition = document.getElementById("definition" + i).value;
-    url += "&pinyin" + i + "=" + pinyin;
-    url += "&definition" + i + "=" + definition;
-  }
-  
-  // add words parameters
-  n = document.getElementById("actual_words_table").rows.length-1;
-  for ( i = 0 ; i < n ; i++ )
-  {
-    var tags = $("#word_definition" + i).tagsManager('tags');
-    for ( j = 0 ; j < tags.length ; j++ )
-    {
-      url += "&word" + i + "definition" + j + "=" + tags[j];
-    }
-  }
+  url += get_character_parameters();
+  url += get_words_parameters();
 
   var req = new XMLHttpRequest();
   req.open("GET", url, true);
@@ -172,6 +154,35 @@ function generateSheet()
   }
   document.getElementById("sheet_loading").style.display = "inline";
   req.send(null);
+}
+
+function get_character_parameters() {
+  var url = "";
+  var n = document.getElementById("actual_characters_table").rows.length-1;
+  for ( i = 0 ; i < n ; i++ )
+  {
+    var pinyin = document.getElementById("pinyin" + i).value;
+    var definition = document.getElementById("definition" + i).value;
+    url += "&pinyin" + i + "=" + pinyin;
+    url += "&definition" + i + "=" + definition;
+  }
+  return url;
+}
+
+function get_words_parameters() {
+  var url = "";
+  var wt = document.getElementById("actual_words_table");
+  if ( wt == null ) return url;
+  n = wt.rows.length-1;
+  for ( i = 0 ; i < n ; i++ )
+  {
+    var tags = $("#word_definition" + i).tagsManager('tags');
+    for ( j = 0 ; j < tags.length ; j++ )
+    {
+      url += "&word" + i + "definition" + j + "=" + tags[j];
+    }
+  }
+  return url;
 }
 
 function download(filename, text) {
