@@ -94,7 +94,8 @@ class RetrieveSheet(Resource):
     def get(self):
         temp_path = request.args.get('id');
         pdf = send_file(os.path.join(temp_path, SHEET_FILE), \
-                        mimetype='application/pdf');
+                        mimetype='application/pdf', \
+                        cache_timeout=-1);
         return pdf;
 
 class RetrieveCount(Resource):
