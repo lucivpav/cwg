@@ -114,6 +114,7 @@ function createWordsTable(words)
 
 function generateSheet()
 {
+  document.getElementById("sheet_error").style.display = "none";
   document.getElementById("download").style.display = "none";
   var title = document.getElementById("title").value;
   var guide = document.getElementById("guide").value;
