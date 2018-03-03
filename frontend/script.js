@@ -91,7 +91,7 @@ function createWordsTable(words)
 {
   if ( words.length == 0 )
     return;
-  var table = '<div class="table-responsive"><table class="table" id="actual_words_table"><thread><tr><th>Words</th><th>Definition</th></tr></thead><tbody>';
+  var table = '<div class="table-responsive"><table class="table" id="actual_words_table"><thread><tr><th>Word</th><th>Definition</th></tr></thead><tbody>';
   for (i = 0 ; i < words.length ; i++)
   {
     row = '<tr><td class="narrow"><input type="text" class="form-control input-lg" value="' + words[i].characters + '" disabled></td>' +
