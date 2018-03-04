@@ -6,6 +6,7 @@ const SERVER_FUCKED_UP_MSG = "Failed to generate sheet. Please enter different c
 
 function onLoad()
 {
+  loadMostRecentVersionIfNecessary();
   document.getElementById("home_link").href = BASE_URL;
   var url = URL + "/retrieve_count";
   var req = new XMLHttpRequest();
@@ -21,6 +22,18 @@ function onLoad()
     }
   }
   req.send(null);
+}
+
+function loadMostRecentVersionIfNecessary()
+{
+  if ( window.localStorage ) {
+    if ( !window.localStorage.getItem('reloaded') ) {
+      window.localStorage['reloaded'] = true;
+      window.location.reload(true);
+    } else {
+      window.localStorage.removeItem('reloaded')
+    }
+  }
 }
 
 function generateInfos()
