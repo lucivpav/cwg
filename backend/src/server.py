@@ -211,7 +211,7 @@ def get_words(working_directory, characters):
 def log_error(working_directory, message):
     error_lock.acquire();
     try:
-        with open(LOG_FILE, 'a') as f:
+        with open(LOG_FILE, 'a', encoding='utf8') as f:
             f.write(str(datetime.datetime.now()));
             f.write(os.linesep);
             f.write(working_directory);
