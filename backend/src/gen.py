@@ -156,20 +156,20 @@ def retrieve_info(dataset_path, character):
         raise GenException('Invalid dataset data for character ' + character);
     
 def create_character_svg(working_dir, character_info):
-    create_stroke_svg(working_dir, character_info.character, character_info,  \
+    create_stroke_svg(working_dir, character_info.character, character_info.stroke_order, \
                         len(character_info.stroke_order));
 
 def create_radical_svg(dataset_path, working_dir, character_info):
     radical = character_info.radical;
-    radical_info = retrieve_info(dataset_path, radical);
-    if radical_info == -1:
-        raise GenException('Could not find data for radical ' + radical);
-    create_stroke_svg(working_dir, radical, radical_info, \
-                        len(radical_info.stroke_order));
 
-def create_stroke_svg(working_dir, filename, character_info, stroke_number):
-    character = character_info.character;
-    stroke_order = character_info.stroke_order;
+    g = get_graphics_json(dataset_path, radical)
+    if g == -1:
+        raise GenException('Could not find data for radical ' + radical);
+    stroke_order = g['strokes'];
+    create_stroke_svg(working_dir, radical, stroke_order, \
+                        len(stroke_order));
+
+def create_stroke_svg(working_dir, filename, stroke_order, stroke_number):
     output = '<svg viewBox="0 0 128 128">' \
             '<g transform="scale(0.125, -0.125) translate(0, -900)">'
     for j in range(stroke_number, len(stroke_order)):
@@ -184,7 +184,7 @@ def create_stroke_order_svgs(working_dir, character_info):
     character = character_info.character;
     stroke_order = character_info.stroke_order;
     for i in range(0, len(stroke_order)+1):
-        create_stroke_svg(working_dir, character + str(i), character_info, i);
+        create_stroke_svg(working_dir, character + str(i), stroke_order, i);
 
 def convert_svg_to_png(svg_path, png_path):
     quality = 100;
@@ -260,7 +260,7 @@ def prefill_character(working_dir, canvas, x, y, filename):
             size, \
             size, mask='auto');
 
-def draw_character_row(working_dir, canvas, character_info, y, guide):
+def draw_character_row(working_dir, canvas, character_info, y, guide): #TODO: refactor
     character_y = y - SQUARE_SIZE;
     radical_y = character_y - RADICAL_HEIGHT;
     radical_pinyin_y = radical_y - RADICAL_PINYIN_HEIGHT
@@ -289,16 +289,18 @@ def draw_character_row(working_dir, canvas, character_info, y, guide):
             SQUARE_SIZE - 2*SQUARE_PADDING, mask='auto');
 
     # draw radical
-    radical_size = RADICAL_HEIGHT-2*RADICAL_PADDING;
-    radical_x = GRID_OFFSET + (SQUARE_SIZE - radical_size)/2
-    radical_y += RADICAL_PADDING;
-    radical = os.path.join(working_dir, character_info.radical + '.png');
-    canvas.drawImage(radical, \
-            radical_x, radical_y, radical_size, radical_size, mask='auto');
+    should_draw_radical = len(character_info.radical_pinyin) > 0;
+    if should_draw_radical:
+        radical_size = RADICAL_HEIGHT-2*RADICAL_PADDING;
+        radical_x = GRID_OFFSET + (SQUARE_SIZE - radical_size)/2
+        radical_y += RADICAL_PADDING;
+        radical = os.path.join(working_dir, character_info.radical + '.png');
+        canvas.drawImage(radical, \
+                radical_x, radical_y, radical_size, radical_size, mask='auto');
 
     # draw radical pinyin
     canvas.setFont(FONT_NAME, FONT_SIZE);
-    if len(character_info.radical_pinyin) > 0:
+    if should_draw_radical:
         radical_pinyin = character_info.radical_pinyin[0];
         radical_pinyin_w = stringWidth(radical_pinyin, FONT_NAME, FONT_SIZE);
         radical_pinyin_x = GRID_OFFSET + (SQUARE_SIZE - radical_pinyin_w) / 2;
