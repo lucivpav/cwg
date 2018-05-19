@@ -22,6 +22,7 @@ Allows one to generate Chinese practice worksheets.
 
 ## Installation notes
 * Place TagManager folder into *frontend* folder
+* [Windows 10 64-bit notes](https://github.com/lucivpav/cwg/wiki/Windows-10-64-bit-installation-notes)
 
 ## Words
 * Use parentheses to group multiple characters together. This will add definition of such words into the sheet.
