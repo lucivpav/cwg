@@ -57,7 +57,7 @@ class TestWordManager(unittest.TestCase):
 
     def test_get_words_two_sunny_words(self):
         manager = WordManager('（你好)我叫(保羅）', self.CEDICT_PATH);
-        expected_words = [Word(0,1,['Hello']), Word(4,5,['Paul'])];
+        expected_words = [Word(0,1,['hello']), Word(4,5,['Paul'])];
         words = manager.get_words();
         self.assertEqual(2, len(words));
         for i, word in enumerate(words):
