@@ -123,11 +123,11 @@ def get_character_json(file, character):
     return -1;
 
 def get_dictionary_json(dataset_path, character):
-    with open(dataset_path + '/dictionary.txt', 'r') as dictionary:
+    with open(dataset_path + '/dictionary.txt', 'r', encoding='utf8') as dictionary:
         return get_character_json(dictionary, character);
 
 def get_graphics_json(dataset_path, character):
-    with open(dataset_path + '/graphics.txt', 'r') as graphics:
+    with open(dataset_path + '/graphics.txt', 'r', encoding='utf8') as graphics:
         return get_character_json(graphics, character);
 
 def retrieve_info(dataset_path, character):

@@ -6,7 +6,7 @@ from exceptions import GenException
 class Translator:
     def __init__(self, cedict_path):
         self.dictionary = None;
-        self.dictionary = open(os.path.join(cedict_path, 'data'), 'r');
+        self.dictionary = open(os.path.join(cedict_path, 'data'), 'r', encoding='utf8');
 
         # Read in the file once and build a list of line offsets
         self.line_offset = []
