@@ -191,7 +191,7 @@ def convert_svg_to_png(svg_path, png_path):
     with open(svg_path, 'r') as f:
         svg_data = '\n'.join(f.readlines());
     svg2png(bytestring=svg_data, write_to=png_path, \
-            width=quality, height=quality);
+            output_width=quality, output_height=quality);
 
 def convert_svgs_to_pngs(working_dir):
     for file in list_files(working_dir, '.*\.svg'):
