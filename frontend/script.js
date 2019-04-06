@@ -48,7 +48,7 @@ function generateInfos()
   document.getElementById("confirm").style.display = "none";
   document.getElementById("download").style.display = "none";
   var characters = document.getElementById("characters").value;
-  var title = document.getElementById("title").value;
+  var title = getWorksheetTitle();
   var guide = document.getElementById("guide").value;
 
   var url = URL + "/generate_infos?characters=" + characters;
@@ -129,7 +129,7 @@ function generateSheet()
 {
   document.getElementById("sheet_error").style.display = "none";
   document.getElementById("download").style.display = "none";
-  var title = document.getElementById("title").value;
+  var title = getWorksheetTitle();
   var guide = document.getElementById("guide").value;
   if ( guide == 0 )
     guide = "none";
@@ -212,6 +212,10 @@ function download(filename, text) {
   document.body.removeChild(element);
 }
 
+function getWorksheetTitle() {
+  return document.getElementById("title").value;
+}
+
 function retrieveSheet()
 {
   var url = URL + "/retrieve_sheet?id=" + id;
@@ -222,7 +226,14 @@ function retrieveSheet()
     if ( req.readyState === 4 ) {
       if ( req.status === 200 ) {
         response = req.response;
-        download("worksheet.pdf", response);
+
+        filename = getWorksheetTitle()
+        if (filename == "") {
+          filename = "worksheet";
+        }
+        filename += ".pdf";
+
+        download(filename, response);
       } else {
         showError("retrieve_error", SERVER_FUCKED_UP_MSG);
       }
