@@ -574,6 +574,7 @@ def generate_sheet(makemeahanzi_path, working_dir, title, guide):
     draw_page_number(c, page_number, PAGE_NUMBER_FONT_SIZE);
     draw_words(c, character_infos, words, page_number, \
             words_with_spanning_translation);
+    c.setTitle(title);
     c.showPage();
     c.save();
 
