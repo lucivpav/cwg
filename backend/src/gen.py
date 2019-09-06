@@ -111,6 +111,7 @@ class Guide(Enum):
     NONE = 1
     STAR = 2
     CROSS = 3
+    CROSS_STAR = 4
 
 def get_character_json(file, character):
     while 1:
@@ -230,14 +231,14 @@ def draw_guide(canvas, x, y, guide):
     canvas.setDash(1, 2);
     canvas.setStrokeColor(CMYKColor(0, 0, 0, 0.2));
 
-    if guide == Guide.STAR:
+    if guide == Guide.STAR or guide == Guide.CROSS_STAR:
         x1 = x;
         y1 = y;
         x2 = x1 + SQUARE_SIZE;
         y2 = y - SQUARE_SIZE;
         canvas.line(x1, y1, x2, y2);
         canvas.line(x2, y1, x1, y2);
-    elif guide == Guide.CROSS:
+    if guide == Guide.CROSS or guide == Guide.CROSS_STAR:
         x1 = x;
         y1 = y - SQUARE_SIZE/2;
         x2 = x1 + SQUARE_SIZE;
@@ -585,6 +586,8 @@ def get_guide(guide_str):
         return Guide.STAR;
     elif guide_str == Guide.CROSS.name.lower():
         return Guide.CROSS;
+    elif guide_str == Guide.CROSS_STAR.name.lower():
+        return Guide.CROSS_STAR;
     else:
         raise GenException('Invalid guide ' + guide_str);
 
