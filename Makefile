@@ -1,5 +1,6 @@
 init: setup
 	pip install pipenv
+	pip install codecov
 	pipenv install
 	pipenv install --dev
 
@@ -7,4 +8,5 @@ setup:
 	./setup.sh
 
 test:
-	(cd backend; pipenv run python -m unittest discover)
+	(export PYTHONPATH=$$PYTHONPATH:src; cd backend; pipenv run pytest test)
+	(export PYTHONPATH=$$PYTHONPATH:src; cd backend; pipenv run pytest test --cov ./src)
