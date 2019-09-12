@@ -1,6 +1,8 @@
 # Chinese Worksheet Generator
 Allows one to generate Chinese practice worksheets.
 
+[![Build Status](https://travis-ci.org/lucivpav/cwg.svg?branch=master)](https://travis-ci.org/lucivpav/cwg)
+
 ![](http://i.imgur.com/HH9eKtC.png)
 
 ## Features
