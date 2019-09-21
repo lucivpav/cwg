@@ -8,3 +8,6 @@ setup:
 
 test:
 	(cd backend; pipenv run python -m unittest discover)
+
+clean:
+	rm -rf cedict makemeahanzi frontend/tagmanager
