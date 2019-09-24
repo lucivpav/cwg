@@ -49,8 +49,9 @@ gen.py --makemeahanzi=$MAKEMEAHANZI_PATH --title='Vocabulary' --guide='star' --s
 
 ## Running tests
 ```
+pipenv install
 cd backend
-python3 -m unittest discover
+pipenv run pytest test
 ```
 
 ## License

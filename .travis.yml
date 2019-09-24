@@ -9,3 +9,6 @@ install:
 
 script:
   - make test
+
+after_success:
+  - (cd backend; codecov)

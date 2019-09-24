@@ -12,6 +12,9 @@ flask = "*"
 flask-restful = "*"
 flask-jsonpify = "*"
 flask-cors = "*"
+pytest = "*"
+pytest-mock = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.7"
