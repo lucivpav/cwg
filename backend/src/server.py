@@ -137,11 +137,9 @@ def update_words_file(working_directory, request_body):
     try:
         words_definitions = request_body['words']
     except:
-        print("no words in this file")
+        # print("no words in this file")
         return
-    print("update word dict object: {}".format(words_definitions))
     file_path = os.path.join(working_directory, WORDS_FILE);
-
     new_file_name = 'new_' + WORDS_FILE;
     new_file_path = os.path.join(working_directory, new_file_name);
     with open(file_path, 'r') as f_orig:
