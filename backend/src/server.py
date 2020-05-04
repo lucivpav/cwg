@@ -27,8 +27,10 @@ count_lock = Lock();
 error_lock = Lock();
 
 class GenerateInfos(Resource):
-    def get(self):
-        characters = request.args.get('characters');
+    def post(self):
+        characters = request.args.get('characters')
+        data = request.get_json()
+        characters = data['characters']
         if characters == None or len(characters) == 0:
             return jsonpify({'error': 'No characters provided'});
         characters = characters.replace(' ', '');
@@ -50,10 +52,11 @@ class GenerateInfos(Resource):
         return jsonpify(result);
 
 class GenerateSheet(Resource):
-    def get(self):
+    def post(self):
         temp_path = request.args.get('id');
         guide = request.args.get('guide');
         title = request.args.get('title');
+        data = request.get_json()
         if temp_path == None or len(temp_path) == 0 or \
             guide == None or len(guide) == 0 or \
             title == None:
@@ -63,8 +66,8 @@ class GenerateSheet(Resource):
         except GenException as e:
             return jsonpify({'error': str(e)});
 
-        update_characters_file(temp_path, request.args);
-        update_words_file(temp_path, request.args);
+        update_characters_file(temp_path, data);
+        update_words_file(temp_path, data);
 
         error_msg = 'generate_sheet ' + title + ' ' + str(guide) + '\n';
         try:
@@ -110,17 +113,8 @@ class RetrieveCount(Resource):
         finally:
             count_lock.release();
 
-def update_characters_file(working_directory, request_args):
-    pinyins = [];
-    definitions = [];
-    i = 0;
-    while ('pinyin' + str(i)) in request_args:
-        pinyins.append(request_args.get('pinyin' + str(i)));
-        definitions.append(request_args.get('definition' + str(i)));
-        i += 1;
-    
+def update_characters_file(working_directory, request_body):
     file_path = os.path.join(working_directory, CHARACTERS_FILE);
-
     new_file_name = 'new_' + CHARACTERS_FILE;
     new_file_path = os.path.join(working_directory, new_file_name);
     with open(file_path, 'r') as f_orig:
@@ -131,32 +125,21 @@ def update_characters_file(working_directory, request_args):
                 if line == '':
                     break;
                 info = json.loads(line);
-                info['pinyin'] = [pinyins[i]];
-                info['definition'] = definitions[i];
+                pinyin = request_body['characters'][info["character"]]['pinyin']
+                definition = request_body['characters'][info["character"]]['definition']
+                info['pinyin'] = [pinyin];
+                info['definition'] = definition;
                 f_new.write(json.dumps(info) + '\n');
                 i += 1;
     shutil.copy(new_file_path, file_path);
 
-def update_words_file(working_directory, request_args):
+def update_words_file(working_directory, request_body):
+    try:
+        words_definitions = request_body['words']
+    except:
+        # no words in this file
+        return
     file_path = os.path.join(working_directory, WORDS_FILE);
-    word_cnt = 0;
-    with open(file_path, 'r') as f_orig:
-        while 1:
-            line = f_orig.readline();
-            if line == '':
-                break;
-            word_cnt += 1;
-
-    # TODO: may throw if len(words_definitions) < number of words in WORDS_FILE
-    words_definitions = [];
-    for i in range(word_cnt):
-        j = 0;
-        definitions = [];
-        while ('word' + str(i) + 'definition' + str(j)) in request_args:
-            definitions.append(request_args.get('word' + str(i) + 'definition' + str(j)));
-            j += 1;
-        words_definitions.append(definitions);
-
     new_file_name = 'new_' + WORDS_FILE;
     new_file_path = os.path.join(working_directory, new_file_name);
     with open(file_path, 'r') as f_orig:
@@ -242,8 +225,8 @@ def main(argv):
     cors = CORS(app);
     app.config['CORS_HEADERS'] = 'Content-Type';
     api = Api(app);
-    api.add_resource(GenerateInfos, '/generate_infos');
-    api.add_resource(GenerateSheet, '/generate_sheet');
+    api.add_resource(GenerateInfos, '/generate_infos', methods=['POST']);
+    api.add_resource(GenerateSheet, '/generate_sheet', methods=['POST']);
     api.add_resource(RetrieveSheet, '/retrieve_sheet');
     api.add_resource(RetrieveCount, '/retrieve_count');
     app.run(port='5002', threaded=True);
