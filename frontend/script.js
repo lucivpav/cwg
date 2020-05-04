@@ -1,4 +1,5 @@
 var id;
+
 const BASE_URL = "http://127.0.0.1"
 const URL = BASE_URL + ":5002";
 const GENERATOR_UNAVAILABLE_MSG = "Generator is unavailable. Please try again later.";
@@ -38,25 +39,27 @@ function generateInfos()
   var title = getWorksheetTitle();
   var guide = document.getElementById("guide").value;
 
-  var url = URL + "/generate_infos?characters=" + characters;
+  var url = URL + "/generate_infos";
   var req = new XMLHttpRequest();
-  req.open("GET", url, true);
-  req.onload = function (e) {
-    if ( req.readyState === 4 ) {
-      if ( req.status === 200 ) {
+  req.open("POST", url, true);
+  req.setRequestHeader("Content-Type", "application/json");
+
+  req.onreadystatechange = function () { //Call a function when the state changes.
+
+    if (req.readyState === 4 && req.status === 200) {
         response = JSON.parse(req.responseText);
         onInfosGenerated(response);
-      } else {
-        showError("infos_error", SERVER_FUCKED_UP_MSG);
-      }
-      document.getElementById("infos_loading").style.display = "none";
-    }
+    } 
+
+    document.getElementById("infos_loading").style.display = "none";
   }
+  scharacters = { "characters": characters }
   req.onerror = function (e) {
     document.getElementById("infos_loading").style.display = "none";
-    showError("infos_error", GENERATOR_UNAVAILABLE_MSG);
+    showError("sheet_error", GENERATOR_UNAVAILABLE_MSG + ": " + e) ;
   }
-  req.send(null);
+  document.getElementById("infos_loading").style.display = "inline";
+  req.send(JSON.stringify(scharacters));
 }
 
 function onInfosGenerated(response)
@@ -70,6 +73,7 @@ function onInfosGenerated(response)
   createWordsTable(response["words"]);
   document.getElementById("confirm").style.display = "inline";
   id = response["id"];
+  // console.log("id: " + id)
 }
 
 function createCharactersTable(infos)
@@ -77,7 +81,7 @@ function createCharactersTable(infos)
   var table = '<div class="table-responsive"><table class="table" id="actual_characters_table"><thead><tr><th>Character</th><th>Pinyin</th><th>Definition</th></tr></thead><tbody>';
   for (i = 0 ; i < infos.length ; i++)
   {
-    row = '<tr><td class="narrow"><input type="text" class="form-control input-lg" value="' + infos[i].character + '" disabled></td>' + 
+    row = '<tr><td class="narrow"><input type="text" id="character' + i + '" class="form-control input-lg" value="' + infos[i].character + '" disabled></td>' + 
       '<td class="narrow"><input type="text" id="pinyin' + i + '" class="form-control input-lg" value="' + infos[i].pinyin + '"></td>' +
       '<td class="wide"><input type="text" id="definition' + i + '" class="form-control input-lg" value="' + infos[i].definition + '"></td></tr>';
     table += row;
@@ -118,6 +122,7 @@ function generateSheet()
   document.getElementById("download").style.display = "none";
   var title = getWorksheetTitle();
   var guide = document.getElementById("guide").value;
+  var payload = {};
   if ( guide == 0 )
     guide = "none";
   else if ( guide == 1 )
@@ -134,58 +139,57 @@ function generateSheet()
   var url = URL + "/generate_sheet?id=" + id +
             "&guide=" + guide +
             "&title=" + title;
-
-  url += get_character_parameters();
-  url += get_words_parameters();
-
+  payload.id = id;
+  payload.guide = guide;
+  payload.title = title;
+  
+  payload.characters = get_character_parameters();
+  payload.words = get_words_parameters();
   var req = new XMLHttpRequest();
-  req.open("GET", url, true);
-  req.onload = function (e) {
-    if ( req.readyState === 4 ) {
-      if ( req.status === 200 ) {
+  req.open("POST", url, true);
+  req.setRequestHeader("Content-Type", "application/json");
+  req.onreadystatechange = function () { //Call a function when the state changes.
+  if (req.readyState === 4 && req.status === 200) {
         response = JSON.parse(req.responseText);
         onSheetGenerated(response);
-      } else {
-        showError("sheet_error", SERVER_FUCKED_UP_MSG);
-      }
-      document.getElementById("sheet_loading").style.display = "none";
-    }
+    } 
+    document.getElementById("sheet_loading").style.display = "none";
   }
   req.onerror = function (e) {
     document.getElementById("sheet_loading").style.display = "none";
-    showError("sheet_error", GENERATOR_UNAVAILABLE_MSG);
+    showError("sheet_error", GENERATOR_UNAVAILABLE_MSG + ": " + e) ;
   }
   document.getElementById("sheet_loading").style.display = "inline";
-  req.send(null);
+  req.send(JSON.stringify(payload));
 }
 
 function get_character_parameters() {
-  var url = "";
+  var charparams = {};
   var n = document.getElementById("actual_characters_table").rows.length-1;
   for ( i = 0 ; i < n ; i++ )
   {
+    var character = document.getElementById("character" + i).value;
     var pinyin = document.getElementById("pinyin" + i).value;
     var definition = document.getElementById("definition" + i).value;
-    url += "&pinyin" + i + "=" + pinyin;
-    url += "&definition" + i + "=" + definition;
+    charparams[character] = {};
+    charparams[character].pinyin = pinyin;
+    charparams[character].definition = definition;
   }
-  return url;
+  return charparams;
 }
 
 function get_words_parameters() {
-  var url = "";
+  var worddefs = [];
   var wt = document.getElementById("actual_words_table");
-  if ( wt == null ) return url;
+  if ( wt == null ) return worddefs;
   n = wt.rows.length-1;
   for ( i = 0 ; i < n ; i++ )
   {
     var tags = $("#word_definition" + i).tagsManager('tags');
-    for ( j = 0 ; j < tags.length ; j++ )
-    {
-      url += "&word" + i + "definition" + j + "=" + tags[j];
-    }
+    worddefs.push(tags);
+
   }
-  return url;
+  return worddefs;
 }
 
 function download(filename, text) {
