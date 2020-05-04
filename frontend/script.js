@@ -148,7 +148,7 @@ function generateSheet()
   var req = new XMLHttpRequest();
   req.open("POST", url, true);
   req.setRequestHeader("Content-Type", "application/json");
-  req.onreadystatechange = function () { //Call a function when the state changes.
+  req.onreadystatechange = function () {
   if (req.readyState === 4 && req.status === 200) {
         response = JSON.parse(req.responseText);
         onSheetGenerated(response);
@@ -157,7 +157,7 @@ function generateSheet()
   }
   req.onerror = function (e) {
     document.getElementById("sheet_loading").style.display = "none";
-    showError("sheet_error", GENERATOR_UNAVAILABLE_MSG + ": " + e) ;
+    showError("sheet_error", GENERATOR_UNAVAILABLE_MSG) ;
   }
   document.getElementById("sheet_loading").style.display = "inline";
   req.send(JSON.stringify(payload));

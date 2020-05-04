@@ -137,7 +137,7 @@ def update_words_file(working_directory, request_body):
     try:
         words_definitions = request_body['words']
     except:
-        # print("no words in this file")
+        # no words in this file
         return
     file_path = os.path.join(working_directory, WORDS_FILE);
     new_file_name = 'new_' + WORDS_FILE;
