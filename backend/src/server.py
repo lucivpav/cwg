@@ -147,7 +147,6 @@ def update_words_file(working_directory, request_args):
                 break;
             word_cnt += 1;
 
-    # TODO: may throw if len(words_definitions) < number of words in WORDS_FILE
     words_definitions = [];
     for i in range(word_cnt):
         j = 0;
