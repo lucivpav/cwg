@@ -118,6 +118,7 @@ function generateSheet()
   document.getElementById("download").style.display = "none";
   var title = getWorksheetTitle();
   var guide = document.getElementById("guide").value;
+  var strokeOrderColor = document.getElementById("stroke-order-color").value;
   if ( guide == 0 )
     guide = "none";
   else if ( guide == 1 )
@@ -131,9 +132,25 @@ function generateSheet()
     showError("sheet_error", "Invalid guide selected.");
     return;
   }
+
+  if ( strokeOrderColor == 0 )
+    strokeOrderColor = "black";
+  else if ( strokeOrderColor == 1 )
+    strokeOrderColor = "red";
+  else if ( strokeOrderColor == 2 )
+    strokeOrderColor = "blue";
+  else if ( strokeOrderColor == 3 )
+    strokeOrderColor = "green";
+  else
+  {
+    showError("sheet_error", "Invalid stroke order color selected.");
+    return;
+  }
+
   var url = URL + "/generate_sheet?id=" + id +
             "&guide=" + guide +
-            "&title=" + title;
+            "&title=" + title +
+            "&stroke_order_color=" + strokeOrderColor;
 
   url += get_character_parameters();
   url += get_words_parameters();

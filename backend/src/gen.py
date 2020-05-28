@@ -87,7 +87,8 @@ def usage():
             ' --sheet\n' + \
             '   --makemeahanzi=<' + MAKEMEAHANZI_NAME + ' path>\n' + \
             '   [--title=<custom title>]\n' + \
-            '   [--guide=star]');
+            '   [--guide=star]\n' + \
+            '   [--stroke-order-color=black]');
 
 # TODO: rename to character
 class character_info:
@@ -170,22 +171,22 @@ def create_radical_svg(dataset_path, working_dir, character_info):
     create_stroke_svg(working_dir, radical, stroke_order, \
                         len(stroke_order));
 
-def create_stroke_svg(working_dir, filename, stroke_order, stroke_number):
+def create_stroke_svg(working_dir, filename, stroke_order, stroke_number, stroke_color="black"):
     output = '<svg viewBox="0 0 128 128">' \
             '<g transform="scale(0.125, -0.125) translate(0, -900)">'
     for j in range(stroke_number, len(stroke_order)):
         output += '\n<path fill=\"gray\" d=\"' + stroke_order[j] + '\"></path>';
     for j in range(0, stroke_number):
-        output += '\n<path d=\"' + stroke_order[j] + '\"></path>';
+        output += '\n<path fill=\"' + stroke_color + '\" d=\"' + stroke_order[j] + '\"></path>';
     output += '</g>\n</svg>';
     with open(os.path.join(working_dir, filename + '.svg'), 'w') as svg:
         svg.write(output);
 
-def create_stroke_order_svgs(working_dir, character_info):
+def create_stroke_order_svgs(working_dir, character_info, stroke_order_color):
     character = character_info.character;
     stroke_order = character_info.stroke_order;
     for i in range(0, len(stroke_order)+1):
-        create_stroke_svg(working_dir, character + str(i), stroke_order, i);
+        create_stroke_svg(working_dir, character + str(i), stroke_order, i, stroke_order_color);
 
 def convert_svg_to_png(svg_path, png_path):
     quality = 100;
@@ -524,7 +525,7 @@ def get_spanning_translations(characters, words):
         spanning_translations[word] = tr;
     return spanning_translations;
 
-def generate_sheet(makemeahanzi_path, working_dir, title, guide):
+def generate_sheet(makemeahanzi_path, working_dir, title, guide, stroke_order_color):
     if len(title) > MAX_TITLE_LENGTH:
         raise GenException('Title length exceeded (' + str(len(title)) + \
                 '/' + str(MAX_TITLE_LENGTH) + ')');
@@ -560,7 +561,7 @@ def generate_sheet(makemeahanzi_path, working_dir, title, guide):
         info = character_infos[i];
         create_character_svg(working_dir, info);
         create_radical_svg(makemeahanzi_path, working_dir, info);
-        create_stroke_order_svgs(working_dir, info);
+        create_stroke_order_svgs(working_dir, info, stroke_order_color);
         convert_svgs_to_pngs(working_dir);
         y = FIRST_CHARACTER_ROW_Y-i_mod*CHARACTER_ROW_HEIGHT;
         draw_character_row(working_dir, c, info, y, guide);
@@ -597,11 +598,12 @@ def main(argv):
     characters = '';
     title = '';
     guide = '';
+    stroke_order_color = '';
     info_mode = False;
     sheet_mode = False;
     opts, args = getopt.getopt(argv, '', \
             ['makemeahanzi=', 'cedict=', 'characters=', \
-            'title=', 'guide=', 'info', 'sheet']);
+            'title=', 'guide=', 'stroke-order-color=', 'info', 'sheet']);
     for opt, arg in opts:
         if opt == '--makemeahanzi':
             makemeahanzi = arg;
@@ -613,6 +615,8 @@ def main(argv):
             title = arg;
         elif opt == '--guide':
             guide = arg;
+        elif opt == '--stroke-order-color':
+            stroke_order_color = arg;
         elif opt == '--info':
             info_mode = True;
         elif opt == '--sheet':
@@ -638,13 +642,13 @@ def main(argv):
         guide_val = get_guide(guide);
         if info_mode == sheet_mode:
             generate_infos(makemeahanzi, cedict, working_dir, characters);
-            generate_sheet(makemeahanzi, working_dir, title, guide_val);
+            generate_sheet(makemeahanzi, working_dir, title, guide_val, stroke_order_color);
             delete_files(working_dir, CHARACTERS_FILE.replace('.', '\.'));
             delete_files(working_dir, WORDS_FILE.replace('.', '\.'));
         elif info_mode:
             generate_infos(makemeahanzi, cedict, working_dir, characters);
         else:
-            generate_sheet(makemeahanzi, working_dir, title, guide_val);
+            generate_sheet(makemeahanzi, working_dir, title, guide_val, stroke_order_color);
     except GenException as e:
         print(str(e));
 

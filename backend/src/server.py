@@ -54,8 +54,10 @@ class GenerateSheet(Resource):
         temp_path = request.args.get('id');
         guide = request.args.get('guide');
         title = request.args.get('title');
+        strokeOrderColor = request.args.get('stroke_order_color');
         if temp_path == None or len(temp_path) == 0 or \
             guide == None or len(guide) == 0 or \
+            strokeOrderColor == None or len(strokeOrderColor) == 0 or \
             title == None:
             return jsonpify({'error': 'Invalid parameters'});
         try:
