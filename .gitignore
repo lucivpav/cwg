@@ -3,3 +3,7 @@ cedict
 tagmanager
 __pycache__
 backend/.coverage
+sheet.pdf
+SourceHanSans*.ttf
+backend/src/character_infos.json
+backend/src/word_infos.json
