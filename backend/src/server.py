@@ -54,10 +54,10 @@ class GenerateSheet(Resource):
         temp_path = request.args.get('id');
         guide = request.args.get('guide');
         title = request.args.get('title');
-        strokeOrderColor = request.args.get('stroke_order_color');
+        stroke_order_color = request.args.get('stroke_order_color');
         if temp_path == None or len(temp_path) == 0 or \
             guide == None or len(guide) == 0 or \
-            strokeOrderColor == None or len(strokeOrderColor) == 0 or \
+            stroke_order_color == None or len(stroke_order_color) == 0 or \
             title == None:
             return jsonpify({'error': 'Invalid parameters'});
         try:
@@ -70,7 +70,7 @@ class GenerateSheet(Resource):
 
         error_msg = 'generate_sheet ' + title + ' ' + str(guide) + '\n';
         try:
-            generate_sheet(MAKEMEAHANZI_PATH, temp_path, title, guide);
+            generate_sheet(MAKEMEAHANZI_PATH, temp_path, title, guide, stroke_order_color);
         except GenException as e:
             log_error(temp_path, error_msg + str(e));
             return jsonpify({'error': str(e)});
