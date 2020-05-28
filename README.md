@@ -36,7 +36,7 @@ gen.py
 ```
 ### Generate worksheet
 ```
-gen.py --makemeahanzi=$MAKEMEAHANZI_PATH --cedict=$CEDICT_PATH --characters='你好' --title='Vocabulary' --guide='star'
+gen.py --makemeahanzi=$MAKEMEAHANZI_PATH --cedict=$CEDICT_PATH --characters='你好' --title='Vocabulary' --guide='star' --stroke-order-color='red'
 ```
 ### Customize pinyin, translation and words
 ```
