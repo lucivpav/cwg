@@ -1,6 +1,8 @@
 # Chinese Worksheet Generator
 Allows one to generate Chinese practice worksheets.
 
+[![Build Status](https://travis-ci.org/lucivpav/cwg.svg?branch=master)](https://travis-ci.org/lucivpav/cwg)
+
 ![](http://i.imgur.com/HH9eKtC.png)
 
 ## Features
@@ -34,7 +36,7 @@ gen.py
 ```
 ### Generate worksheet
 ```
-gen.py --makemeahanzi=$MAKEMEAHANZI_PATH --cedict=$CEDICT_PATH --characters='你好' --title='Vocabulary' --guide='star'
+gen.py --makemeahanzi=$MAKEMEAHANZI_PATH --cedict=$CEDICT_PATH --characters='你好' --title='Vocabulary' --guide='star' --stroke-order-color='red'
 ```
 ### Customize pinyin, translation and words
 ```
@@ -47,8 +49,9 @@ gen.py --makemeahanzi=$MAKEMEAHANZI_PATH --title='Vocabulary' --guide='star' --s
 
 ## Running tests
 ```
+pipenv install
 cd backend
-python3 -m unittest discover
+pipenv run pytest test
 ```
 
 ## License
