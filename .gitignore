@@ -1,9 +1,12 @@
+.DS_Store
 makemeahanzi
 cedict
-tagmanager
 __pycache__
 backend/.coverage
 sheet.pdf
 SourceHanSans*.ttf
 backend/src/character_infos.json
 backend/src/word_infos.json
+frontend/dist/bundle.js
+frontend/dist/style.css
+frontend/node_modules

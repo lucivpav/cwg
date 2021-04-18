@@ -1,0 +1,11 @@
+{
+    "python.pythonPath": "/usr/local/bin/python3",
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": "frontend/src/",
+                "cmd": "cd frontend && npm run build"
+            },
+        ]
+    }
+}

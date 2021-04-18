@@ -1,10 +1,15 @@
+import Tagify from '@yaireo/tagify';
+import './style.css';
+
 var id;
 const BASE_URL = "http://127.0.0.1"
 const URL = BASE_URL + ":5002";
 const GENERATOR_UNAVAILABLE_MSG = "Generator is unavailable. Please try again later.";
 const SERVER_FUCKED_UP_MSG = "Failed to generate sheet. Please enter different configuration or try again later.";
 
-function onLoad()
+var tagifyWordDefinitions = [];
+
+export function onLoad()
 {
   document.getElementById("home_link").href = BASE_URL;
   var url = URL + "/retrieve_count";
@@ -13,9 +18,9 @@ function onLoad()
   req.onload = function (e) {
     if ( req.readyState === 4 ) {
       if ( req.status === 200 ) {
-        response = JSON.parse(req.responseText);
-        count = response["count"];
-        text = "Number of worksheets generated: " + count;
+        var response = JSON.parse(req.responseText);
+        var count = response["count"];
+        var text = "Number of worksheets generated: " + count;
         document.getElementById("worksheets_generated").innerHTML = text;
       }
     }
@@ -23,7 +28,7 @@ function onLoad()
   req.send(null);
 }
 
-function generateInfos()
+export function generateInfos()
 {
   document.getElementById("infos_loading").style.display = "inline";
   document.getElementById("infos_error").style.display = "none";
@@ -35,8 +40,6 @@ function generateInfos()
   document.getElementById("confirm").style.display = "none";
   document.getElementById("download").style.display = "none";
   var characters = document.getElementById("characters").value;
-  var title = getWorksheetTitle();
-  var guide = document.getElementById("guide").value;
 
   var url = URL + "/generate_infos?characters=" + characters;
   var req = new XMLHttpRequest();
@@ -44,7 +47,7 @@ function generateInfos()
   req.onload = function (e) {
     if ( req.readyState === 4 ) {
       if ( req.status === 200 ) {
-        response = JSON.parse(req.responseText);
+        var response = JSON.parse(req.responseText);
         onInfosGenerated(response);
       } else {
         showError("infos_error", SERVER_FUCKED_UP_MSG);
@@ -75,9 +78,9 @@ function onInfosGenerated(response)
 function createCharactersTable(infos)
 {
   var table = '<div class="table-responsive"><table class="table" id="actual_characters_table"><thead><tr><th>Character</th><th>Pinyin</th><th>Definition</th></tr></thead><tbody>';
-  for (i = 0 ; i < infos.length ; i++)
+  for (let i = 0 ; i < infos.length ; i++)
   {
-    row = '<tr><td class="narrow"><input type="text" class="form-control input-lg" value="' + infos[i].character + '" disabled></td>' + 
+    let row = '<tr><td class="narrow"><input type="text" class="form-control input-lg" value="' + infos[i].character + '" disabled></td>' + 
       '<td class="narrow"><input type="text" id="pinyin' + i + '" class="form-control input-lg" value="' + infos[i].pinyin + '"></td>' +
       '<td class="wide"><input type="text" id="definition' + i + '" class="form-control input-lg" value="' + infos[i].definition + '"></td></tr>';
     table += row;
@@ -92,27 +95,30 @@ function createWordsTable(words)
   if ( words.length == 0 )
     return;
   var table = '<div class="table-responsive"><table class="table" id="actual_words_table"><thread><tr><th>Word</th><th>Definition</th></tr></thead><tbody>';
-  for (i = 0 ; i < words.length ; i++)
+  for (let i = 0 ; i < words.length ; i++)
   {
-    row = '<tr><td class="narrow"><input type="text" class="form-control input-lg" value="' + words[i].characters + '" disabled></td>' +
-      '<td class="wide"><div class="form-inline"><input type="text" id="word_definition' + i + '" class="form-control input-lg tm-input tm-input-large"></div></td></tr>';
+    let row = '<tr><td class="narrow"><input type="text" class="form-control input-lg" value="' + words[i].characters + '" disabled></td>' +
+      //'<td class="wide"><div class="form-inline"><input type="text" id="word_definition' + i + '" class="form-control input-lg no-shadow custom-tagify"></div></td></tr>';
+      '<td class="wide"><div class="form-inline"><input tabindex="-1" type="text" id="word_definition' + i + '" class="input-lg no-shadow custom-tagify"></div></td></tr>';
+      //'<td class="wide"><div class="form-inline"><input type="text" id="word_definition' + i + '" class="no-shadow custom-tagify"></div></td></tr>';
     table += row;
   }
   table += '</tbody></table></div>';
   document.getElementById("words_table").innerHTML = table;
   document.getElementById("words_table").style.display = "inline";
 
-  $(".tm-input").tagsManager();
-
   // add word tags
-  for (i = 0 ; i < words.length ; i++)
+  tagifyWordDefinitions = [];
+  for (let i = 0 ; i < words.length ; i++)
   {
-    for (j in words[i].definition)
-      $("#word_definition" + i).tagsManager('pushTag', words[i].definition[j]);
+    let tagInput = document.querySelector(`#word_definition${i}`);
+    let tagifyWordDefinition = new Tagify(tagInput);
+    tagifyWordDefinition.addTags(words[i].definition);
+    tagifyWordDefinitions.push(tagifyWordDefinition);
   }
 }
 
-function generateSheet()
+export function generateSheet()
 {
   document.getElementById("sheet_error").style.display = "none";
   document.getElementById("download").style.display = "none";
@@ -160,7 +166,7 @@ function generateSheet()
   req.onload = function (e) {
     if ( req.readyState === 4 ) {
       if ( req.status === 200 ) {
-        response = JSON.parse(req.responseText);
+        let response = JSON.parse(req.responseText);
         onSheetGenerated(response);
       } else {
         showError("sheet_error", SERVER_FUCKED_UP_MSG);
@@ -179,7 +185,7 @@ function generateSheet()
 function get_character_parameters() {
   var url = "";
   var n = document.getElementById("actual_characters_table").rows.length-1;
-  for ( i = 0 ; i < n ; i++ )
+  for ( let i = 0 ; i < n ; i++ )
   {
     var pinyin = document.getElementById("pinyin" + i).value;
     var definition = document.getElementById("definition" + i).value;
@@ -193,13 +199,13 @@ function get_words_parameters() {
   var url = "";
   var wt = document.getElementById("actual_words_table");
   if ( wt == null ) return url;
-  n = wt.rows.length-1;
-  for ( i = 0 ; i < n ; i++ )
+  var n = wt.rows.length-1;
+  for ( let i = 0 ; i < n ; i++ )
   {
-    var tags = $("#word_definition" + i).tagsManager('tags');
-    for ( j = 0 ; j < tags.length ; j++ )
+    let tags = tagifyWordDefinitions[i].value;
+    for ( let j = 0 ; j < tags.length ; j++ )
     {
-      url += "&word" + i + "definition" + j + "=" + tags[j];
+      url += "&word" + i + "definition" + j + "=" + tags[j].value;
     }
   }
   return url;
@@ -222,7 +228,7 @@ function getWorksheetTitle() {
   return document.getElementById("title").value;
 }
 
-function retrieveSheet()
+export function retrieveSheet()
 {
   var url = URL + "/retrieve_sheet?id=" + id;
   var req = new XMLHttpRequest();
@@ -231,9 +237,9 @@ function retrieveSheet()
   req.onload = function (e) {
     if ( req.readyState === 4 ) {
       if ( req.status === 200 ) {
-        response = req.response;
+        let response = req.response;
 
-        filename = getWorksheetTitle()
+        let filename = getWorksheetTitle()
         if (filename == "") {
           filename = "worksheet";
         }

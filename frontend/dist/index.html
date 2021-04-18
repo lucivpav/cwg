@@ -4,15 +4,13 @@
   <title>Chinese Worksheet Generator</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" href="style.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <link rel="stylesheet" type="text/css" href="tagmanager/tagmanager.css">
-  <script src="script.js"></script>
+  <link rel="stylesheet" href="style.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <script src="tagmanager/tagmanager.js"></script>
+  <script src="./bundle.js"></script>
 </head>
-<body onload="onLoad()">
+<body onload="cwg.onLoad()">
 
 <div class="jumbotron text-center">
   <a id=home_link><h1>Chinese Worksheet Generator</h1></a>
@@ -54,7 +52,7 @@ This will generate word definitions!
   </select>
 </div>
 <button id="submit" type="submit" class="btn-lg btn-primary"
-  onclick="generateInfos()">Generate</button>
+  onclick="cwg.generateInfos()">Generate</button>
 </button>
 <label id="infos_loading" style="display:none">
     <span class="glyphicon glyphicon-refresh spinning"></span> Loading...
@@ -71,7 +69,7 @@ This will generate word definitions!
 </div>
 
 <button id="confirm" type="submit" class="btn-lg btn-primary" style="display:none"
-	onclick="generateSheet()">Confirm</button>
+	onclick="cwg.generateSheet()">Confirm</button>
 <label id="sheet_loading" style="display:none">
     <span class="glyphicon glyphicon-refresh spinning"></span> Loading...
 </label>
@@ -80,7 +78,7 @@ This will generate word definitions!
 </div>
 
 <button id="download" type="submit" class="btn-lg btn-primary" style="display:none"
-	onclick="retrieveSheet()">Download (*•̀ᴗ•́*)و ̑̑</button>
+	onclick="cwg.retrieveSheet()">Download (*•̀ᴗ•́*)و ̑̑</button>
   
 <div id="retrieve_error" class="alert alert-danger" style="display:none">
 </div>

@@ -1,0 +1,113 @@
+@import '@yaireo/tagify/dist/tagify.css';
+
+/* TODO: problems with tagify:
+  - pasting a value to the input inserts it immediately
+  - double click to edit a tag highlights the input
+  - tag remove buttons not focusable with tab navigation
+*/
+
+.custom-tagify {
+  --tag-hover: var(--tag-bg);
+  --tag-pad: 0.0em 0.0em;
+  --tag-bg: #f5f5f5;
+  --tag-text-color: #555;
+  /*--tags-border-color: #bbbbbb;*/ /* this prop is useless! */
+  /*--tags-focus-border-color: red;*/
+  border: none;
+  display: flex; /* TODO: this must be inline-flex! Why is display: inline-block enforced?! */
+  flex-direction: row;
+  align-items: stretch;
+  height: 100%;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 16.25px;
+}
+
+.custom-tagify .tagify__tag:hover {
+  border: 1px solid #bbbbbb;
+  border-radius: 4px;
+}
+
+.custom-tagify.tagify--focus .tagify__input {
+  border-color: #66afe9;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+}
+
+.custom-tagify .tagify__input {
+  border: 1px solid #ccc;
+  border-radius: inherit;
+  box-shadow: inherit;
+  margin: unset;
+  padding: 13px 14px 0px 14px;
+  width: 200px;
+  height: 46px;
+  flex-grow: 0;
+  white-space: nowrap;
+  overflow: scroll;
+}
+
+.custom-tagify .tagify__tag {
+  height: 46px;
+  margin: 0 5px 5px 0;
+  padding: 10px 5px;
+  background-color: #f5f5f5;
+  border: 1px solid #bbbbbb;
+  border-radius: 4px;
+}
+
+.custom-tagify .tagify__tag__removeBtn {
+  margin: unset;
+}
+
+.no-shadow {
+  box-shadow: none;
+}
+
+label {
+  font-size: 20px;
+}
+
+table .narrow {
+  width: 10%;
+}
+
+table .wide {
+  width: 100%
+}
+
+table th {
+  font-size: 20px;
+}
+
+table {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.glyphicon.spinning {
+    animation: spin 1s infinite linear;
+    -webkit-animation: spin2 1s infinite linear;
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg); }
+    to { transform: scale(1) rotate(360deg); }
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60px;
+  line-height: 60px;
+  background-color: #f5f5f5;
+}
