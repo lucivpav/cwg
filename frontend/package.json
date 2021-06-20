@@ -8,7 +8,7 @@
   },
   "keywords": [],
   "dependencies": {
-    "@yaireo/tagify": "git+ssh://git@github.com/lucivpav/tagify.git#02ad91c"
+    "@yaireo/tagify": "git+ssh://git@github.com/lucivpav/tagify.git#d34c0cc"
   },
   "devDependencies": {
     "css-loader": "^5.0.1",

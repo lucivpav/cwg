@@ -112,7 +112,12 @@ function createWordsTable(words)
   for (let i = 0 ; i < words.length ; i++)
   {
     let tagInput = document.querySelector(`#word_definition${i}`);
-    let tagifyWordDefinition = new Tagify(tagInput);
+    let settings = {
+      a11y: {
+        focusableTags: false // TODO: make it wor
+      }
+    };
+    let tagifyWordDefinition = new Tagify(tagInput, settings);
     tagifyWordDefinition.addTags(words[i].definition);
     tagifyWordDefinitions.push(tagifyWordDefinition);
   }
