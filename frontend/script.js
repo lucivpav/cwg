@@ -127,6 +127,8 @@ function generateSheet()
     guide = "cross";
   else if ( guide == 3 )
     guide = "cross_star";
+  else if ( guide == 4 )
+    guide = "character";
   else
   {
     showError("sheet_error", "Invalid guide selected.");
