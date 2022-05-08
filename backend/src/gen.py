@@ -113,6 +113,7 @@ class Guide(Enum):
     STAR = 2
     CROSS = 3
     CROSS_STAR = 4
+    CHARACTER = 5
 
 def get_character_json(file, character):
     while 1:
@@ -228,7 +229,13 @@ def draw_header(canvas, title, font_size, y):
     canvas.drawString(NAME_OFFSET, y, 'Name:');
     canvas.drawString(NAME_OFFSET + SCORE_OFFSET, y, 'Score:');
 
-def draw_guide(canvas, x, y, guide):
+def draw_guide(canvas, x, y, guide, working_dir, character_info):
+    if guide == Guide.CHARACTER:
+        prefill_character(working_dir, canvas, x + SQUARE_PADDING, \
+                            y - SQUARE_PADDING, \
+                            character_info.character + '0.png');
+        return;
+
     canvas.setDash(1, 2);
     canvas.setStrokeColor(CMYKColor(0, 0, 0, 0.2));
 
@@ -276,11 +283,12 @@ def draw_character_row(working_dir, canvas, character_info, y, guide): #TODO: re
     for i in range(0, int(CHARACTER_ROW_WIDTH/SQUARE_SIZE)):
         canvas.rect(GRID_OFFSET + i*SQUARE_SIZE, \
                 radical_pinyin_y - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
-        draw_guide(canvas, GRID_OFFSET + i*SQUARE_SIZE, radical_pinyin_y, guide);
+        draw_guide(canvas, GRID_OFFSET + i*SQUARE_SIZE, radical_pinyin_y, guide, working_dir, character_info);
 
-    prefill_character(working_dir, canvas, GRID_OFFSET + SQUARE_PADDING, \
-                        radical_pinyin_y - SQUARE_PADDING, \
-                        character_info.character + '0.png');
+    if guide != Guide.CHARACTER:
+        prefill_character(working_dir, canvas, GRID_OFFSET + SQUARE_PADDING, \
+                            radical_pinyin_y - SQUARE_PADDING, \
+                            character_info.character + '0.png');
 
     # draw character
     character = os.path.join(working_dir, character_info.character + '.png');
@@ -589,6 +597,8 @@ def get_guide(guide_str):
         return Guide.CROSS;
     elif guide_str == Guide.CROSS_STAR.name.lower():
         return Guide.CROSS_STAR;
+    elif guide_str == Guide.CHARACTER.name.lower():
+        return Guide.CHARACTER;
     else:
         raise GenException('Invalid guide ' + guide_str);
 
