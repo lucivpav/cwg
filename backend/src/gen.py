@@ -33,7 +33,6 @@ MAKEMEAHANZI_NAME = 'Make Me a Hanzi'
 CEDICT_NAME = 'CEDICT'
 CHARACTERS_FILE = 'character_infos.json'
 WORDS_FILE = 'word_infos.json'
-SHEET_FILE = 'sheet.pdf'
 
 PAGE_SIZE = A4
 CHARACTERS_PER_PAGE = 5
@@ -546,7 +545,7 @@ def generate_sheet(makemeahanzi_path, working_dir, title, guide, stroke_order_co
     words = load_data_from_json_file(working_dir, WORDS_FILE, Word.fromJSON)
     words = filter_out_words_with_empty_definition(words)
 
-    c = canvas.Canvas(os.path.join(working_dir, SHEET_FILE), PAGE_SIZE)
+    c = canvas.Canvas(os.path.join(working_dir, f"{title}.pdf"), PAGE_SIZE)
     pdfmetrics.registerFont(TTFont(FONT_NAME, FONT_NAME + '.ttf'))
 
     words_with_spanning_translation = get_spanning_translations( \
