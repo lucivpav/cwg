@@ -12,3 +12,4 @@ curl https://raw.githubusercontent.com/max-favilli/tagmanager/v3.0.2/tagmanager.
 curl https://github.com/be5invis/source-han-sans-ttf/releases/download/v2.001.1/source-han-sans-ttf-2.001.1.7z -L > SourceHanSansTtf.7z
 7za e SourceHanSansTtf.7z SourceHanSansTC-Normal.ttf
 rm SourceHanSansTtf.7z
+mv SourceHanSansTC-Normal.ttf backend/src/
