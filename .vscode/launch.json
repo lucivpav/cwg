@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "backend/src/server.py",
             "console": "integratedTerminal",
-            "args": ["--makemeahanzi=./makemeahanzi", "--cedict=./cedict"]
+            "args": []
         }
     ]
 }

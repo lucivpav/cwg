@@ -223,21 +223,21 @@ def log_error(working_directory, message):
         error_lock.release();
 
 def usage():
-    print('usage: ' + PROGRAM_NAME + '\n' + \
-            '   --makemeahanzi=<' + MAKEMEAHANZI_NAME + ' path>\n' + \
-            '   --cedict=<' + CEDICT_NAME + ' path>');
+    print('usage: ' + PROGRAM_NAME + '\n');
 
 def main(argv):
     global MAKEMEAHANZI_PATH, CEDICT_PATH;
-    opts, args = getopt.getopt(argv, '', ['makemeahanzi=', 'cedict=']);
-    for opt, arg in opts:
-        if opt == '--makemeahanzi':
-            MAKEMEAHANZI_PATH = arg;
-        elif opt == '--cedict':
-            CEDICT_PATH = arg;
-    if MAKEMEAHANZI_PATH == '' or CEDICT_PATH == '':
-        usage();
-        exit(1);
+    opts, args = getopt.getopt(argv, '', []);
+
+    if 'MAKEMEAHANZI' in os.environ:
+        MAKEMEAHANZI_PATH = os.environ['MAKEMEAHANZI'];
+    else:
+        raise GenException('MAKEMEAHANZI enviroment variable not set');
+
+    if 'CEDICT' in os.environ:
+        CEDICT_PATH = os.environ['CEDICT'];
+    else:
+        raise GenException('CEDICT enviroment variable not set');
 
     app = Flask(__name__);
     cors = CORS(app);

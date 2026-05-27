@@ -75,17 +75,12 @@ DEFINITION_SEPARATOR = ', ';
 def usage():
     print('usage: ' + PROGRAM_NAME + '\n' + \
             ' <default>\n' + \
-            '   --makemeahanzi=<' + MAKEMEAHANZI_NAME + ' path>\n' + \
-            '   --cedict=<' + CEDICT_NAME + ' path>\n' + \
             '   --characters=<chinese characters>\n' + \
             '   [--title=<custom title>]\n' + \
             '   [--guide=star]\n' + \
             ' --info\n' + \
-            '   --makemeahanzi=<' + MAKEMEAHANZI_NAME + ' path>\n' + \
-            '   --cedict=<' + CEDICT_NAME + ' path>\n' + \
             '   --characters=<chinese characters>\n' + \
             ' --sheet\n' + \
-            '   --makemeahanzi=<' + MAKEMEAHANZI_NAME + ' path>\n' + \
             '   [--title=<custom title>]\n' + \
             '   [--guide=star]\n' + \
             '   [--stroke-order-color=black]');
@@ -603,8 +598,6 @@ def get_guide(guide_str):
         raise GenException('Invalid guide ' + guide_str);
 
 def main(argv):
-    makemeahanzi = '';
-    cedict = ''
     characters = '';
     title = '';
     guide = '';
@@ -612,14 +605,10 @@ def main(argv):
     info_mode = False;
     sheet_mode = False;
     opts, args = getopt.getopt(argv, '', \
-            ['makemeahanzi=', 'cedict=', 'characters=', \
-            'title=', 'guide=', 'stroke-order-color=', 'info', 'sheet']);
+            ['characters=', 'title=', 'guide=', \
+            'stroke-order-color=', 'info', 'sheet']);
     for opt, arg in opts:
-        if opt == '--makemeahanzi':
-            makemeahanzi = arg;
-        elif opt == '--cedict':
-            cedict = arg;
-        elif opt == '--characters':
+        if opt == '--characters':
             characters = arg;
         elif opt == '--title':
             title = arg;
@@ -635,13 +624,21 @@ def main(argv):
             usage();
             exit(1);
 
+    if 'MAKEMEAHANZI' in os.environ:
+        makemeahanzi = os.environ['MAKEMEAHANZI'];
+    else:
+        raise GenException('MAKEMEAHANZI enviroment variable not set');
+
+    if 'CEDICT' in os.environ:
+        cedict = os.environ['CEDICT'];
+    else:
+        raise GenException('CEDICT enviroment variable not set');
+
     if info_mode == sheet_mode:
         info_mode = True;
         sheet_mode = True;
 
-    if makemeahanzi == '' \
-            or (info_mode and cedict == '') \
-            or (info_mode and characters == '') \
+    if (info_mode and characters == '') \
             or (sheet_mode and not info_mode and characters != '') \
             or (info_mode and not sheet_mode and title != ''):
         usage();

@@ -34,17 +34,23 @@ Allows one to generate Chinese practice worksheets.
 ```
 gen.py
 ```
+### Set up envrionment variables
+Set up the paths to dependencies, prior to using the worksheet generation
+```
+export MAKEMEAHANZI="path_to_makemeahanzi"
+export CEDICT="path_to_cedict"
+```
 ### Generate worksheet
 ```
-gen.py --makemeahanzi=$MAKEMEAHANZI_PATH --cedict=$CEDICT_PATH --characters='你好' --title='Vocabulary' --guide='star' --stroke-order-color='red'
+gen.py --characters='你好' --title='Vocabulary' --guide='star' --stroke-order-color='red'
 ```
 ### Customize pinyin, translation and words
 ```
-gen.py --makemeahanzi=$MAKEMEAHANZI_PATH --cedict=$CEDICT_PATH --characters='(你好)' --info # Generate character_infos.json
+gen.py --characters='(你好)' --info # Generate character_infos.json
 
 # You may edit the 'character_infos.json' and 'word_infos.json' to customize pinyin, translation and words
 
-gen.py --makemeahanzi=$MAKEMEAHANZI_PATH --title='Vocabulary' --guide='star' --sheet # Generate worksheet
+gen.py --title='Vocabulary' --guide='star' --sheet # Generate worksheet
 ```
 
 ## Running tests
