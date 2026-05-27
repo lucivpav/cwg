@@ -97,7 +97,7 @@ class RetrieveSheet(Resource):
         temp_path = request.args.get('id');
         pdf = send_file(os.path.join(temp_path, SHEET_FILE), \
                         mimetype='application/pdf', \
-                        cache_timeout=-1);
+                        max_age=-1);
         return pdf;
 
 class RetrieveCount(Resource):
