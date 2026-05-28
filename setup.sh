@@ -23,4 +23,9 @@ curl https://github.com/be5invis/source-han-sans-ttf/releases/download/v2.001.1/
 7z e SourceHanSansTtf.7z SourceHanSansTC-Normal.ttf -bso0 -bsp0
 rm SourceHanSansTtf.7z
 
+echo ""
 echo "Done"
+echo ""
+echo "Please use these environment variables:"
+echo "MAKEMEAHANZI=$(pwd)/makemeahanzi"
+echo "CEDICT=$(pwd)/cedict"
