@@ -22,6 +22,7 @@ echo "SourceHanSansTtf..."
 curl https://github.com/be5invis/source-han-sans-ttf/releases/download/v2.001.1/source-han-sans-ttf-2.001.1.7z -L -o SourceHanSansTtf.7z -sS
 7z e SourceHanSansTtf.7z SourceHanSansTC-Normal.ttf -bso0 -bsp0
 rm SourceHanSansTtf.7z
+ln -s "$(pwd)/SourceHanSansTC-Normal.ttf"  backend/SourceHanSansTC-Normal.ttf # for tests
 
 echo ""
 echo "Done"

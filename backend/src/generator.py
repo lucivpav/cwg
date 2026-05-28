@@ -111,6 +111,7 @@ class InMemoryDataset:
 class Generator:
     def __init__(self, makemeahanzi_path):
         self._initialize_datasets(makemeahanzi_path);
+        pdfmetrics.registerFont(TTFont(FONT_NAME, FONT_NAME + '.ttf'));
 
     def _initialize_datasets(self, dataset_path):
         self.dictionary_dataset = InMemoryDataset(dataset_path + '/dictionary.txt')
@@ -530,7 +531,6 @@ class Generator:
         words = self._filter_out_words_with_empty_definition(words);
 
         c = canvas.Canvas(os.path.join(working_dir, SHEET_FILE), PAGE_SIZE);
-        pdfmetrics.registerFont(TTFont(FONT_NAME, FONT_NAME + '.ttf'));
 
         words_with_spanning_translation = self._get_spanning_translations( \
                                             character_infos, words);
