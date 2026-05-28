@@ -12,8 +12,8 @@ import sys
 import datetime
 from exceptions import GenException
 from threading import Lock
-from gen import generate_infos, generate_sheet, \
-                CHARACTERS_FILE, WORDS_FILE, SHEET_FILE, get_guide, \
+from generator import Generator, \
+                CHARACTERS_FILE, WORDS_FILE, SHEET_FILE, \
                 MAKEMEAHANZI_NAME, CEDICT_NAME
 
 MAKEMEAHANZI_PATH = '';
@@ -26,6 +26,8 @@ INTERNAL_ERROR_MSG = 'Failed to generate sheet. Please enter different configura
 count_lock = Lock();
 error_lock = Lock();
 
+generator = None
+
 class GenerateInfos(Resource):
     def get(self):
         characters = request.args.get('characters');
@@ -35,7 +37,7 @@ class GenerateInfos(Resource):
         path = tempfile.mkdtemp();
         error_msg = 'generate_infos ' + characters + '\n';
         try:
-            generate_infos(MAKEMEAHANZI_PATH, CEDICT_PATH, path, characters);
+            generator.generate_infos(MAKEMEAHANZI_PATH, CEDICT_PATH, path, characters);
         except GenException as e:
             log_error(path, error_msg + str(e));
             return jsonpify({'error': str(e)});
@@ -61,7 +63,7 @@ class GenerateSheet(Resource):
             title == None:
             return jsonpify({'error': 'Invalid parameters'});
         try:
-            guide = get_guide(guide);
+            guide = generator.get_guide(guide);
         except GenException as e:
             return jsonpify({'error': str(e)});
 
@@ -70,7 +72,7 @@ class GenerateSheet(Resource):
 
         error_msg = 'generate_sheet ' + title + ' ' + str(guide) + '\n';
         try:
-            generate_sheet(MAKEMEAHANZI_PATH, temp_path, title, guide, stroke_order_color);
+            generator.generate_sheet(MAKEMEAHANZI_PATH, temp_path, title, guide, stroke_order_color);
         except GenException as e:
             log_error(temp_path, error_msg + str(e));
             return jsonpify({'error': str(e)});
@@ -226,7 +228,7 @@ def usage():
     print('usage: ' + PROGRAM_NAME + '\n');
 
 def main(argv):
-    global MAKEMEAHANZI_PATH, CEDICT_PATH;
+    global generator, MAKEMEAHANZI_PATH, CEDICT_PATH;
     opts, args = getopt.getopt(argv, '', []);
 
     if 'MAKEMEAHANZI' in os.environ:
@@ -239,6 +241,7 @@ def main(argv):
     else:
         raise GenException('CEDICT enviroment variable not set');
 
+    generator = Generator(MAKEMEAHANZI_PATH);
     app = Flask(__name__);
     cors = CORS(app);
     app.config['CORS_HEADERS'] = 'Content-Type';

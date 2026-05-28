@@ -32,7 +32,7 @@ Allows one to generate Chinese practice worksheets.
 ## Command line worksheet generation
 ### Show usage
 ```
-gen.py
+cli.py
 ```
 ### Set up envrionment variables
 Set up the paths to dependencies, prior to using the worksheet generation
@@ -42,15 +42,15 @@ export CEDICT="path_to_cedict"
 ```
 ### Generate worksheet
 ```
-gen.py --characters='你好' --title='Vocabulary' --guide='star' --stroke-order-color='red'
+cli.py --characters='你好' --title='Vocabulary' --guide='star' --stroke-order-color='red'
 ```
 ### Customize pinyin, translation and words
 ```
-gen.py --characters='(你好)' --info # Generate character_infos.json
+cli.py --characters='(你好)' --info # Generate character_infos.json
 
 # You may edit the 'character_infos.json' and 'word_infos.json' to customize pinyin, translation and words
 
-gen.py --title='Vocabulary' --guide='star' --sheet # Generate worksheet
+cli.py --title='Vocabulary' --guide='star' --sheet # Generate worksheet
 ```
 
 ## Running tests
