@@ -185,7 +185,10 @@ def get_characters(working_directory):
             info = json.loads(line);
             character = info['character'];
             definition = info['definition'];
+
+            # TODO: this may throw as pinyin is not present in the dataset for all characters
             pinyin = info['pinyin'][0];
+
             i = {'character': character, \
                     'definition': definition, \
                     'pinyin': pinyin}

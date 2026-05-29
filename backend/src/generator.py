@@ -97,16 +97,17 @@ class Guide(Enum):
 class InMemoryDataset:
     def __init__(self, dataset_path):
         with open(dataset_path, 'r', encoding='utf8') as dataset:
-            self.lines = dataset.readlines();
+            self.dict = {}
+            while 1:
+                line = dataset.readline();
+                if line == '':
+                    break;
+                value = json.loads(line);
+                key = value['character']
+                self.dict[key] = value
 
     def get_character_json(self, character):
-        for line in self.lines:
-            if line == '':
-                break;
-            item = json.loads(line);
-            if item['character'] == character:
-                return item;
-        return -1;
+        return self.dict.get(character, -1);
 
 class Generator:
     def __init__(self, makemeahanzi_path):
