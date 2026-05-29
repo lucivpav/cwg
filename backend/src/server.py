@@ -12,9 +12,8 @@ import sys
 import datetime
 from exceptions import GenException
 from threading import Lock
-from gen import generate_infos, generate_sheet, \
-                CHARACTERS_FILE, WORDS_FILE, SHEET_FILE, get_guide, \
-                MAKEMEAHANZI_NAME, CEDICT_NAME
+from generator import Generator, \
+                CHARACTERS_FILE, WORDS_FILE, SHEET_FILE
 
 MAKEMEAHANZI_PATH = '';
 CEDICT_PATH = '';
@@ -26,6 +25,8 @@ INTERNAL_ERROR_MSG = 'Failed to generate sheet. Please enter different configura
 count_lock = Lock();
 error_lock = Lock();
 
+generator = None
+
 class GenerateInfos(Resource):
     def get(self):
         characters = request.args.get('characters');
@@ -35,7 +36,7 @@ class GenerateInfos(Resource):
         path = tempfile.mkdtemp();
         error_msg = 'generate_infos ' + characters + '\n';
         try:
-            generate_infos(MAKEMEAHANZI_PATH, CEDICT_PATH, path, characters);
+            generator.generate_infos(MAKEMEAHANZI_PATH, CEDICT_PATH, path, characters);
         except GenException as e:
             log_error(path, error_msg + str(e));
             return jsonpify({'error': str(e)});
@@ -61,7 +62,7 @@ class GenerateSheet(Resource):
             title == None:
             return jsonpify({'error': 'Invalid parameters'});
         try:
-            guide = get_guide(guide);
+            guide = generator.get_guide(guide);
         except GenException as e:
             return jsonpify({'error': str(e)});
 
@@ -70,7 +71,7 @@ class GenerateSheet(Resource):
 
         error_msg = 'generate_sheet ' + title + ' ' + str(guide) + '\n';
         try:
-            generate_sheet(MAKEMEAHANZI_PATH, temp_path, title, guide, stroke_order_color);
+            generator.generate_sheet(MAKEMEAHANZI_PATH, temp_path, title, guide, stroke_order_color);
         except GenException as e:
             log_error(temp_path, error_msg + str(e));
             return jsonpify({'error': str(e)});
@@ -97,7 +98,7 @@ class RetrieveSheet(Resource):
         temp_path = request.args.get('id');
         pdf = send_file(os.path.join(temp_path, SHEET_FILE), \
                         mimetype='application/pdf', \
-                        cache_timeout=-1);
+                        max_age=-1);
         return pdf;
 
 class RetrieveCount(Resource):
@@ -183,7 +184,10 @@ def get_characters(working_directory):
             info = json.loads(line);
             character = info['character'];
             definition = info['definition'];
+
+            # TODO: this may throw as pinyin is not present in the dataset for all characters
             pinyin = info['pinyin'][0];
+
             i = {'character': character, \
                     'definition': definition, \
                     'pinyin': pinyin}
@@ -223,22 +227,23 @@ def log_error(working_directory, message):
         error_lock.release();
 
 def usage():
-    print('usage: ' + PROGRAM_NAME + '\n' + \
-            '   --makemeahanzi=<' + MAKEMEAHANZI_NAME + ' path>\n' + \
-            '   --cedict=<' + CEDICT_NAME + ' path>');
+    print('usage: ' + PROGRAM_NAME + '\n');
 
 def main(argv):
-    global MAKEMEAHANZI_PATH, CEDICT_PATH;
-    opts, args = getopt.getopt(argv, '', ['makemeahanzi=', 'cedict=']);
-    for opt, arg in opts:
-        if opt == '--makemeahanzi':
-            MAKEMEAHANZI_PATH = arg;
-        elif opt == '--cedict':
-            CEDICT_PATH = arg;
-    if MAKEMEAHANZI_PATH == '' or CEDICT_PATH == '':
-        usage();
-        exit(1);
+    global generator, MAKEMEAHANZI_PATH, CEDICT_PATH;
+    opts, args = getopt.getopt(argv, '', []);
 
+    if 'MAKEMEAHANZI' in os.environ:
+        MAKEMEAHANZI_PATH = os.environ['MAKEMEAHANZI'];
+    else:
+        raise GenException('MAKEMEAHANZI enviroment variable not set');
+
+    if 'CEDICT' in os.environ:
+        CEDICT_PATH = os.environ['CEDICT'];
+    else:
+        raise GenException('CEDICT enviroment variable not set');
+
+    generator = Generator(MAKEMEAHANZI_PATH);
     app = Flask(__name__);
     cors = CORS(app);
     app.config['CORS_HEADERS'] = 'Content-Type';

@@ -2,9 +2,10 @@ import os
 import unittest
 import tempfile
 
-from gen import generate_infos, WORDS_FILE, CHARACTERS_FILE
+from generator import Generator, WORDS_FILE, CHARACTERS_FILE
 from exceptions import GenException
 
+# TODO: test the Generator.__init__ separately
 class TestGen(unittest.TestCase):
     def setUp(self):
         self.makemeahanzi_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../makemeahanzi'));
@@ -13,21 +14,24 @@ class TestGen(unittest.TestCase):
     def test_generate_infos_no_words(self):
         with tempfile.TemporaryDirectory() as wd:
             characters = '你好';
-            generate_infos(self.makemeahanzi_path, self.cedict_path, \
+            g = Generator(self.makemeahanzi_path)
+            g.generate_infos(self.makemeahanzi_path, self.cedict_path, \
                             wd, characters);
             self.__assert_correct_info_files(wd, 2, 0);
 
     def test_generate_infos_one_word(self):
         with tempfile.TemporaryDirectory() as wd:
             characters = '(你好)';
-            generate_infos(self.makemeahanzi_path, self.cedict_path, \
+            g = Generator(self.makemeahanzi_path)
+            g.generate_infos(self.makemeahanzi_path, self.cedict_path, \
                             wd, characters);
             self.__assert_correct_info_files(wd, 2, 1);
 
     def test_generate_infos_two_words(self):
         with tempfile.TemporaryDirectory() as wd:
             characters = '(你好)(高興）';
-            generate_infos(self.makemeahanzi_path, self.cedict_path, \
+            g = Generator(self.makemeahanzi_path)
+            g.generate_infos(self.makemeahanzi_path, self.cedict_path, \
                             wd, characters);
             self.__assert_correct_info_files(wd, 4, 2);
 
@@ -35,14 +39,16 @@ class TestGen(unittest.TestCase):
         with tempfile.TemporaryDirectory() as wd:
             characters = '你好ř';
             with self.assertRaises(GenException):
-                generate_infos(self.makemeahanzi_path, self.cedict_path, \
+                g = Generator(self.makemeahanzi_path)
+                g.generate_infos(self.makemeahanzi_path, self.cedict_path, \
                                 wd, characters);
 
     # expected: word with empty definition list
     def test_generate_infos_unknown_word(self):
         with tempfile.TemporaryDirectory() as wd:
             characters = '(你好號號)';
-            generate_infos(self.makemeahanzi_path, self.cedict_path, \
+            g = Generator(self.makemeahanzi_path)
+            g.generate_infos(self.makemeahanzi_path, self.cedict_path, \
                             wd, characters);
             self.__assert_correct_info_files(wd, 4, 1);
 
@@ -50,21 +56,24 @@ class TestGen(unittest.TestCase):
         with tempfile.TemporaryDirectory() as wd:
             characters = '你好';
             with self.assertRaises(Exception):
-                generate_infos('i_dont_exist', self.cedict_path, \
+                g = Generator('i_dont_exist')
+                g.generate_infos('i_dont_exist', self.cedict_path, \
                             wd, characters);
 
     def test_generate_infos_invalid_cedict_path(self):
         with tempfile.TemporaryDirectory() as wd:
             characters = '你好';
             with self.assertRaises(Exception):
-                generate_infos(self.makemeahanzi_path, 'i_dont_exist', \
+                g = Generator(self.makemeahanzi_path)
+                g.generate_infos(self.makemeahanzi_path, 'i_dont_exist', \
                             wd, characters);
 
     def test_generate_infos_no_characters(self):
         with tempfile.TemporaryDirectory() as wd:
             characters = '';
             with self.assertRaises(GenException):
-                generate_infos(self.makemeahanzi_path, self.cedict_path, \
+                g = Generator(self.makemeahanzi_path)
+                g.generate_infos(self.makemeahanzi_path, self.cedict_path, \
                                 wd, characters);
 
     def test_generate_infos_too_many_characters(self):
@@ -73,7 +82,8 @@ class TestGen(unittest.TestCase):
                             '號號號號號號號號號號號號號號號號號號號' + \
                             '號號號號號號號號號號號號號號號號號號號';
             with self.assertRaises(GenException):
-                generate_infos(self.makemeahanzi_path, self.cedict_path, \
+                g = Generator(self.makemeahanzi_path)
+                g.generate_infos(self.makemeahanzi_path, self.cedict_path, \
                             wd, characters);
 
     def __assert_correct_info_files(self, working_directory, \
