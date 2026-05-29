@@ -13,8 +13,7 @@ import datetime
 from exceptions import GenException
 from threading import Lock
 from generator import Generator, \
-                CHARACTERS_FILE, WORDS_FILE, SHEET_FILE, \
-                MAKEMEAHANZI_NAME, CEDICT_NAME
+                CHARACTERS_FILE, WORDS_FILE, SHEET_FILE
 
 MAKEMEAHANZI_PATH = '';
 CEDICT_PATH = '';
