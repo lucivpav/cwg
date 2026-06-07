@@ -10,6 +10,7 @@ import shutil
 import getopt
 import sys
 import datetime
+import time
 from exceptions import GenException
 from threading import Lock
 from generator import Generator, \
@@ -47,6 +48,9 @@ class GenerateInfos(Resource):
         characters = get_characters(path);
         words = get_words(path, characters);
 
+        # throttle. Note this also affects simultaneous requests
+        time.sleep(3.5)
+
         result = { 'id': path, 'characters': characters, 'words': words };
         return jsonpify(result);
 
@@ -78,6 +82,9 @@ class GenerateSheet(Resource):
         except Exception as e:
             log_error(temp_path, error_msg + str(e));
             return jsonpify({'error': INTERNAL_ERROR_MSG});
+
+        # throttle. Note this also affects simultaneous requests
+        time.sleep(2)
 
         # increment count
         count_lock.acquire();
