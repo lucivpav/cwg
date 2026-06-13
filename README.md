@@ -32,6 +32,9 @@ sh setup.sh
 ```
 See also: [Windows 10 64-bit notes](https://github.com/lucivpav/cwg/wiki/Windows-10-64-bit-installation-notes)
 
+## Running the website
+- Set up your nginx such that HTTPS requests to port 5002 are redirected to port 5003 as HTTP.
+
 ## Command line worksheet generation
 ### Generate worksheet
 ```
