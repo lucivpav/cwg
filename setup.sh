@@ -5,7 +5,7 @@ rm -rf makemeahanzi cedict frontend/tagmanager SourceHanSansTC-Normal.ttf
 
 echo "makemeahanzi..."
 curl https://github.com/skishore/makemeahanzi/archive/refs/heads/master.zip -L -o makemeahanzi.zip -sS
-unzip makemeahanzi.zip -q
+unzip -q makemeahanzi.zip
 mv makemeahanzi-master makemeahanzi
 rm makemeahanzi.zip
 
